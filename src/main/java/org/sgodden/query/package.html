@@ -1,0 +1,66 @@
+<body>
+<p>A lightweight object-oriented query framework.</p>
+<p/>The query package provides a simple object-centric query API, independent of 
+any particular persistence back end.
+<p/>
+The only back end currently implemented is Hibernate, but there's nothing to 
+stop e.g. a plain JDBC or JDO back end being written.
+<p/>
+The purpose of this project is <em>not</em> to provide a fully-functional query 
+API capable of everything that, say, the Hibernate Criteria API can do. It is only 
+to allow simple queries to be performed very easily.
+<p/>
+<h2>Status</h2>
+This is currently at beta status, but stable.
+
+<h2>Features</h2>
+<ul>
+    <li>Very simple object-centric API, allowing plain or nested properties to 
+    be retrieved and aggregate functions applied to them;</li>
+    <li>Ability to have the created result sets automatically page, calling 
+    back the query service that created them to retrieve further pages as 
+    necessary, totally transparent to the client.</li>
+</ul>
+
+<h2>Usage examples</h2>
+<h3>Simple usage retrieving all rows at once with only simple filter restriction</h3>
+<pre>
+QueryService queryService; // presumably dependency-injected
+
+...
+
+Query query = new Query()
+    .setObjectClass(Order.class)
+    .addColumn("orderNumber")
+    .addColumn("orderDate")
+    .addColumn("customer.name")
+    .addColumn("orderLines.grossWeight", AggregateFunction.SUM)
+    .addFilterCriterion(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Peter Jones"})));
+
+ResultSet rs = queryService.execute(query)
+</pre>
+
+<h3>Example showing more complex restriction criteria</h3>
+<pre>
+QueryService queryService; // presumably dependency-injected
+
+...
+
+Query query = new Query()
+    .setObjectClass(Order.class)
+    .addColumn("orderNumber")
+    .addColumn("orderDate")
+    .addColumn("customer.name")
+    .addColumn("orderLines.grossWeight", AggregateFunction.SUM)
+    .addFilterCriterion(
+        new OrRestriction()
+            .or(new AndRestrction()
+                .and(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Fred Bloggs"}))
+                .and(new SimpleRestriction("orderNumber"", Operator.STARTS_WITH, "123"))
+            .or(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Peter Jones"}))
+    );
+
+ResultSet rs = queryService.execute(query)
+</pre>
+
+</body>
