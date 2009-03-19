@@ -15,15 +15,26 @@
 package org.sgodden.query.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import nextapp.echo.app.table.AbstractTableModel;
 import nextapp.echo.app.table.TableModel;
 
+import org.sgodden.query.AggregateFunction;
+import org.sgodden.query.AndRestriction;
+import org.sgodden.query.Operator;
+import org.sgodden.query.OrRestriction;
 import org.sgodden.query.Query;
 import org.sgodden.query.Restriction;
 import org.sgodden.query.ResultSet;
+import org.sgodden.query.ResultSetColumn;
 import org.sgodden.query.ResultSetRow;
+import org.sgodden.query.SimpleRestriction;
 import org.sgodden.query.SortData;
 import org.sgodden.query.service.QueryService;
 
@@ -62,6 +73,16 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * The result set returned from the query service.
      */
     private ResultSet rs;
+    
+    /**
+     * Whether the query is grouping by the first column in the sorting sequence
+     */
+    private boolean isGrouping = false;
+    
+    /**
+     * The counts of the distinct values in the grouped column
+     */
+    private Map<Object, Long> groupCounts = null;
 
     /**
      * Constructs a new abstract query table model.
@@ -78,6 +99,40 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     public AbstractQueryTableModel(QueryService service) {
         this();
         this.service = service;
+    }
+
+    /**
+     * Informs the grouping table model whether it should be performing
+     * the grouping.
+     * @param dataIndex
+     */
+    public void doGrouping(boolean doGrouping) {
+        this.isGrouping = doGrouping;
+        if (this.rs != null)
+            updateGroupCounts(getQuery());
+    }
+    
+    /**
+     * Returns the grouping table model whether it is performing the
+     * grouping.
+     * @return
+     */
+    public boolean isGrouping() {
+        return isGrouping;
+    }
+    
+    /**
+     * Returns the count of the values for each unique value in the grouped
+     * table. If the table is not grouping, this will return null.
+     * @return
+     */
+    public Map<Object, Long> getGroupCounts() {
+        if (!isGrouping)
+            return null;
+        
+        if (groupCounts == null)
+            updateGroupCounts(getQuery());
+        return groupCounts;
     }
 
     /**
@@ -101,7 +156,10 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * @param query the query to (re)execute.
      */
     protected void doRefresh(Query query) {
+        groupCounts = null;
         rs = getQueryService().executeQuery(query);
+        if (isGrouping)
+            updateGroupCounts(query);
         fireTableDataChanged();
     }
 
@@ -126,7 +184,10 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      */
     protected ResultSet getResultSet() {
         if (rs == null) {
+            groupCounts = null;
             rs = getQueryService().executeQuery(getQuery());
+            if (isGrouping)
+                updateGroupCounts(getQuery());
         }
         return rs;
     }
@@ -305,6 +366,61 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
                 throw new IllegalArgumentException("Unknown column " + columnNames[i]);
         }
         refresh(criterion, sDatas);
+    }
+    
+    public void updateGroupCounts(Query query) {
+        groupCounts = new HashMap<Object, Long>();
+        
+        SortData groupingCol = query.getSortData()[0];
+        
+        Restriction r = query.getFilterCriterion();
+        Locale l = query.getLocale();
+        String className = query.getObjectClassName();
+        Set<Object> values = new HashSet<Object>();
+        boolean hasNull = false;
+        for (int i = 0; i < getRowCount(); i++) {
+            Object value = getValueAt(groupingCol.getColumnIndex(), i);
+            if (value == null)
+                hasNull = true;
+            else
+                values.add(value);
+        }
+        String attributePath = query.getColumns().get(groupingCol.getColumnIndex()).getAttributePath();
+        
+        AndRestriction andR = new AndRestriction();
+        andR.and(r);
+        
+        if (!hasNull) {
+            SimpleRestriction sr = new SimpleRestriction(attributePath, Operator.IN, values.toArray());
+            andR.and(sr);
+        } else {
+            SimpleRestriction sr = new SimpleRestriction(attributePath, Operator.IN, values.toArray());
+            SimpleRestriction sr2 = new SimpleRestriction(attributePath, Operator.EQUALS, new Object[] {null});
+            
+            OrRestriction orR = new OrRestriction(sr, sr2);
+            andR.and(orR);
+        }
+        
+        Query q = new Query();
+        q.setObjectClassName(className);
+        q.setLocale(l);
+        q.setSortData(new SortData(0, groupingCol.getAscending()));
+        q.setFilterCriterion(andR);
+        q.addColumn(attributePath);
+        q.addColumn("*", AggregateFunction.COUNT);
+        q.setCalculateRowCount(true);
+        q.setIncludeId(false);
+        
+        ResultSet results = getQueryService().executeQuery(q);
+        
+        int rows = results.getRowCount();
+        for (int i = 0; i < rows; i++) {
+            ResultSetRow rsr = results.getRow(i);
+            ResultSetColumn[] cols = rsr.getColumns();
+            Object value = cols[0].getValue();
+            Long count = ((Number)cols[1].getValue()).longValue();
+            groupCounts.put(value, count);
+        }
     }
 
 }

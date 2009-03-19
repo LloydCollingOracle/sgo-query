@@ -32,6 +32,13 @@ public class QueryStringBuilder {
      * @return An HQL query string to determine the number of matching rows.
      */
     public String buildCountQuery(Query query) {
+        if (!query.getIncludeId()) {
+            String normalQuery = buildQuery(query);
+            normalQuery = normalQuery.substring(0, normalQuery.indexOf("ORDER BY"));
+            String queryString = "select count(*) from ( " + normalQuery + ") as subq";
+            return queryString;
+        }
+        
         StringBuffer buf = new StringBuffer("SELECT COUNT(distinct obj.id) ");
 
         buf.append(" FROM " + query.getObjectClassName() + " AS obj");
@@ -96,20 +103,30 @@ public class QueryStringBuilder {
                     
                     String[] pathElements = col.getAttributePath().split("\\.");
                     String currentPath = "";
+                    String parentPath = "";
                     for (int j = 0; j <=i;j++) {
-                        if (j != 0)
+                        if (j != 0) {
                             currentPath += ".";
+                        }
                         currentPath += pathElements[j];
+                        if (j < i)
+                            parentPath += pathElements[j];
                     }
                     
-                    String alias = QueryUtil.getClassAlias(currentPath);
+                    String alias = currentPath.replaceAll("\\.", "");
                     if (!aliases.contains(alias)) {
                         buf.append(" LEFT OUTER JOIN");
-                        buf
-                                .append(" obj."
-                                        + QueryUtil.getRelationName(currentPath));
+                        
+                        if ("".equals(parentPath)) {
+                            if (currentPath.indexOf(".") > -1)
+                                buf.append(" obj." + QueryUtil.getRelationName(currentPath));
+                            else
+                                buf.append(" obj." + currentPath);
+                        } else {
+                            buf.append(" " + parentPath + "." + pathElements[i]);
+                        }
                         buf.append(" AS "
-                                + QueryUtil.getClassAlias(currentPath));
+                                + alias);
                         aliases.add(alias);
                     }
                 }
@@ -172,11 +189,15 @@ public class QueryStringBuilder {
         }
 
         if (anyAggregateFunctions) {
-            buf.append(" GROUP BY obj.id ");
+            if (query.getIncludeId())
+                buf.append(" GROUP BY obj.id ");
+            else
+                buf.append(" GROUP BY ");
             for (QueryColumn col : query.getColumns()) {
                 if (col.getAggregateFunction() == null) {
 
-                    buf.append(", ");
+                    if (!buf.toString().endsWith(" GROUP BY "))
+                        buf.append(", ");
                     buf.append(QueryUtil.getClassAlias(col.getAttributePath()));
                     buf.append("."
                             + QueryUtil.getFinalAttributeName(col
@@ -270,7 +291,10 @@ public class QueryStringBuilder {
                 if (query.getSortData()[0] == null)
                     throw new IllegalStateException("Sort Datas may not be null!");
                 
-                primarySortColumn = query.getSortData()[0].getColumnIndex() + 2;
+                if (query.getIncludeId())
+                    primarySortColumn = query.getSortData()[0].getColumnIndex() + 2;
+                else
+                    primarySortColumn = query.getSortData()[0].getColumnIndex() + 1;
                 LOG.debug("Primary sort column is: " + primarySortColumn);
                 orderByBuf.append(" " + primarySortColumn);
                 orderByBuf.append(" "
@@ -279,7 +303,9 @@ public class QueryStringBuilder {
 
                 for (int i = 0; i < query.getColumns().size(); i++) {
 
-                    int orderColumnIndex = i + 2;
+                    int orderColumnIndex = i + 1;
+                    if (query.getIncludeId())
+                        orderColumnIndex++;
 
                     /*
                      * Ensure that we don't include the primary sort column
@@ -299,7 +325,11 @@ public class QueryStringBuilder {
             } else {
                 for (int i = 0; i < query.getSortData().length; i++) {
                     SortData thisSort = query.getSortData()[i];
-                    Integer sortColumn = thisSort.getColumnIndex() + 2;
+                    Integer sortColumn = null;
+                    if (query.getIncludeId())
+                        sortColumn = thisSort.getColumnIndex() + 2;
+                    else
+                        sortColumn = thisSort.getColumnIndex() + 1;
 
                     LOG.debug("Adding sort column " + sortColumn);
                     orderByBuf.append(" " + sortColumn);
@@ -315,7 +345,9 @@ public class QueryStringBuilder {
 
             for (int i = 0; i < query.getColumns().size(); i++) {
 
-                int orderColumnIndex = i + 2;
+                int orderColumnIndex = i + 1;
+                if (query.getIncludeId())
+                    orderColumnIndex++;
 
                 /*
                  * Ensure that we don't include the primary sort column again.
@@ -332,10 +364,12 @@ public class QueryStringBuilder {
         /*
          * And we always have the id as the last sort column.
          */
-        if (orderByBuf.toString().trim().length() > 0)
-            orderByBuf.append(", 1");
-        else
-            orderByBuf.append("1");
+        if (query.getIncludeId()) {
+            if (orderByBuf.toString().trim().length() > 0)
+                orderByBuf.append(", 1");
+            else
+                orderByBuf.append("1");
+        }
         buf.append(orderByBuf.toString());
 
     }
@@ -362,11 +396,17 @@ public class QueryStringBuilder {
      * @return the select clause.
      */
     private StringBuffer getSelectClause(Query query) {
-        StringBuffer ret = new StringBuffer("SELECT obj.id");
+        StringBuffer ret = new StringBuffer();
+        if (query.getIncludeId())
+            ret.append("SELECT obj.id");
+        else
+            ret.append("SELECT ");
 
         for (QueryColumn col : query.getColumns()) {
 
-            ret.append(", ");
+            if (!ret.toString().equals("SELECT ")) {
+                ret.append(", ");
+            }
 
             AggregateFunction func = col.getAggregateFunction();
 
@@ -384,6 +424,8 @@ public class QueryStringBuilder {
                         ret.append("AVG(");
                     } else if (func == AggregateFunction.SUM) {
                         ret.append("SUM(");
+                    } else if (func == AggregateFunction.COUNT) {
+                        ret.append("COUNT(");
                     } else {
                         throw new UnsupportedOperationException("" + func);
                     }

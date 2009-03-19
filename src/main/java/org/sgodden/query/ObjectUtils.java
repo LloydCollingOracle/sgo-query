@@ -19,6 +19,7 @@ package org.sgodden.query;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 
 /**

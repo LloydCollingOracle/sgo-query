@@ -54,6 +54,7 @@ public class Query
 	private int bailOutSize = 0;
 	private boolean calculateRowCount = false;
 	private SortData[] sortData;
+	private boolean includeId = true;
 	
 	/**
 	 * Constructs a new query.
@@ -317,5 +318,17 @@ public class Query
 	public SortData[] getSortData() {
 	    return sortData;
 	}
+
+	/**
+	 * Whether we should include the id in the select and group by, order by clauses
+	 * @return
+	 */
+    public boolean getIncludeId() {
+        return includeId;
+    }
+
+    public void setIncludeId(boolean include) {
+        includeId = include;
+    }
 
 }

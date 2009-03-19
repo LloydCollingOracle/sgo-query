@@ -6,7 +6,7 @@ package org.sgodden.query.models;
  * @author sgodden
  */
 public interface QueryTableModel extends FilterableTableModel,
-        SortableTableModel {
+        SortableTableModel, GroupingTableModel {
 
     /**
      * Returns the object identifier for the specified row.

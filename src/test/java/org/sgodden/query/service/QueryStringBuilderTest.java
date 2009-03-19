@@ -82,4 +82,26 @@ public class QueryStringBuilderTest {
                 "SELECT obj.id, obj.code FROM java.lang.String AS obj ORDER BY 2, 1");
     }
 
+    /**
+     * Tests the inclusion of tables and child tables
+     */
+    public void testMultiDepthSelection() {
+        Query query = new Query().setObjectClassName(String.class.getName())
+                .addColumn("blah.foo");
+        String queryString = new QueryStringBuilder().buildQuery(query);
+        assertEquals(queryString,
+                "SELECT obj.id, blah.foo FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah ORDER BY 2, 1");
+    }
+
+    /**
+     * Tests the inclusion of tables, child tables and grandchild tables.
+     */
+    public void testMultiDepthSelection2() {
+        Query query = new Query().setObjectClassName(String.class.getName())
+                .addColumn("blah.foo.bar");
+        String queryString = new QueryStringBuilder().buildQuery(query);
+        assertEquals(queryString,
+                "SELECT obj.id, blahfoo.bar FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah LEFT OUTER JOIN blah.foo AS blahfoo ORDER BY 2, 1");
+    }
+
 }

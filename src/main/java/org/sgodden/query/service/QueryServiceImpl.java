@@ -161,17 +161,24 @@ public class QueryServiceImpl implements QueryService {
         while (it.hasNext()) {
             Object[] row = (Object[]) it.next();
             ResultSetRow rsRow = new ResultSetRow();
-            rsRow.setId(row[0].toString());
+            if (query.getIncludeId())
+                rsRow.setId(row[0].toString());
 
-            ResultSetColumn[] remainingColumns = new ResultSetColumn[row.length - 1];
-            for (int i = 1; i < row.length; i++) {
+            ResultSetColumn[] remainingColumns = new ResultSetColumn[query.getIncludeId() ? row.length - 1 : row.length];
+            int i = 0;
+            if (query.getIncludeId())
+                i++;
+            for (; i < row.length; i++) {
                 ResultSetColumn col = new ResultSetColumn();
-                QueryColumn queryCol = query.getColumns().get(i - 1);
+                QueryColumn queryCol = null;
+                if (query.getIncludeId())
+                    queryCol = query.getColumns().get(i - 1);
+                else
+                    queryCol = query.getColumns().get(i);
                 Object value = row[i];
 
                 if (value != null
-                        && AggregateFunction.LOCALE == query.getColumns().get(
-                                i - 1).getAggregateFunction()) {
+                        && AggregateFunction.LOCALE == queryCol.getAggregateFunction()) {
                     String theString = (String) value;
                     value = theString.substring(10, theString.length());
                 }
@@ -222,7 +229,7 @@ public class QueryServiceImpl implements QueryService {
                     }
                 }
 
-                remainingColumns[i - 1] = col;
+                remainingColumns[query.getIncludeId() ? i - 1 : i] = col;
             }
 
             rsRow.setColumns(remainingColumns);

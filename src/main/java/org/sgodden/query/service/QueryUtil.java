@@ -55,6 +55,8 @@ class QueryUtil {
     }
 
     static String getQualifiedAttributeIdentifier(String attributePath) {
+        if ("*".equals(attributePath))
+            return "*";
         return getClassAlias(attributePath) + '.'
                 + getFinalAttributeName(attributePath);
     }
@@ -108,6 +110,6 @@ class QueryUtil {
      * @return
      */
     public static int getRelationDepth(String attributePath) {
-        return attributePath.split("\\.").length;
+        return attributePath.split("\\.").length - 1;
     }
 }
