@@ -36,7 +36,7 @@ import org.sgodden.query.service.QueryService;
  * FIXME - this class currently combines the public interface required by both
  * consumers and producers of result set objects.  This needs to be refactored.
  * 
- * @author sgodden
+ * @author Simon Godden
  *
  */
 @SuppressWarnings("serial")

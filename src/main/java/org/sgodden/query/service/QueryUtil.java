@@ -109,7 +109,7 @@ class QueryUtil {
      * @param attributePath
      * @return
      */
-    public static int getRelationDepth(String attributePath) {
+    static int getRelationDepth(String attributePath) {
         return attributePath.split("\\.").length - 1;
     }
 }

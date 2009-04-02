@@ -35,7 +35,7 @@ Query query = new Query()
     .addColumn("orderDate")
     .addColumn("customer.name")
     .addColumn("orderLines.grossWeight", AggregateFunction.SUM)
-    .addFilterCriterion(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Peter Jones"})));
+    .addFilterCriterion(new SimpleRestriction("customer.name", Operator.EQUALS, "Peter Jones")));
 
 ResultSet rs = queryService.execute(query)
 </pre>
@@ -55,9 +55,9 @@ Query query = new Query()
     .addFilterCriterion(
         new OrRestriction()
             .or(new AndRestrction()
-                .and(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Fred Bloggs"}))
+                .and(new SimpleRestriction("customer.name", Operator.EQUALS, "Fred Bloggs"))
                 .and(new SimpleRestriction("orderNumber"", Operator.STARTS_WITH, "123"))
-            .or(new SimpleRestriction("customer.name", Operator.EQUALS, new Object[]{"Peter Jones"}))
+            .or(new SimpleRestriction("customer.name", Operator.IN, new Object[]{"Peter Jones", "John Smith"}))
     );
 
 ResultSet rs = queryService.execute(query)

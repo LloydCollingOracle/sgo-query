@@ -28,9 +28,18 @@ import java.util.List;
 public class OrRestriction implements CompositeRestriction {
     
     private List < Restriction > criteria = new ArrayList < Restriction >();
-    
+
+    /**
+     * Creates a new empty or restriction.
+     */
     public OrRestriction() {}
     
+    /**
+     * Creates a new or restriction where all
+     * of the passed restrictions are placed in
+     * an or condition in the query select clause.
+     * @param restrictions the restrictions.
+     */
     public OrRestriction(Restriction... restrictions) {
         for (int i = 0; i < restrictions.length; i++) {
             criteria.add(restrictions[i]);

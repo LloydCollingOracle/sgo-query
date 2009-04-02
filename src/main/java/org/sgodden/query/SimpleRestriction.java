@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 /**
  * A single criterion in the filter of a query.
- * @author sgodden
+ * @author Simon Godden
  */
 public class SimpleRestriction implements Serializable, Restriction {
 

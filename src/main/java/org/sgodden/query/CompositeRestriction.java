@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * A restriction composed of multiple sub-restrictions.
- * @author sgodden
+ * @author Simon Godden
  */
 public interface CompositeRestriction extends Restriction {
     

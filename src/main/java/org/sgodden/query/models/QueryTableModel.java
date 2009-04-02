@@ -1,9 +1,10 @@
 package org.sgodden.query.models;
 
+import org.sgodden.query.Query;
 
 /**
- * A table model built on a simple object query interface.
- * @author sgodden
+ * A table model built on an instance of {@link Query}.
+ * @author Simon Godden
  */
 public interface QueryTableModel extends FilterableTableModel,
         SortableTableModel, GroupingTableModel {

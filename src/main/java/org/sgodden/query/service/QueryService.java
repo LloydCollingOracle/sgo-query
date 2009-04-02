@@ -20,7 +20,7 @@ import org.sgodden.query.Query;
 import org.sgodden.query.ResultSet;
 
 /**
- * A service which runs queries and returns results.
+ * A service which runs queries and returns result sets.
  * @author goddens
  *
  */

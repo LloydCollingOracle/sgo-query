@@ -22,7 +22,7 @@ import java.io.Serializable;
  * Encapsulates a column in the result set.
  * <p/>
  * FIXME - this class currently combines the public interface required by both consumers and producers of result set objects.  This needs to be refactored.
- * @author sgodden
+ * @author Simon Godden
  *
  */
 @SuppressWarnings("serial")

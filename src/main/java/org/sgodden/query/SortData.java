@@ -2,10 +2,9 @@ package org.sgodden.query;
 
 import java.io.Serializable;
 
-
 /**
  * Simple holder for sort data.
- * @author sgodden
+ * @author Simon Godden
  */
 public class SortData implements Serializable {
 

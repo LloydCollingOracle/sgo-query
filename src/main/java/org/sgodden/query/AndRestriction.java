@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * A composite filter criterion, whose member criteria will be
  * appended to the query as an 'and' filter clause.
- * @author sgodden
+ * @author Simon Godden
  *
  */
 public class AndRestriction implements CompositeRestriction {

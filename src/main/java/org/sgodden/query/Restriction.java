@@ -18,7 +18,7 @@ package org.sgodden.query;
 
 /**
  * A marker interface for different criterion implementations.
- * @author sgodden
+ * @author Simon Godden
  */
 public interface Restriction {
 }

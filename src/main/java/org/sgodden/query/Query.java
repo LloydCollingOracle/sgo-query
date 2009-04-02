@@ -25,15 +25,11 @@ import java.util.Locale;
 /**
  * Encapsulates a simple query.
  * <p/>
- * TODO - provide usage examples.
+ * For usage examples, see the package description.
  * <p/>
  * FIXME - fetch size and max rows do not work in conjunction
- * <p/>
- * TODO - allow the caller to set the WHERE clause directly rather than
- * using the filter criteria, and probably remove the filter criteria 
- * altogether.
  * 
- * @author goddens
+ * @author Simon Godden
  *
  */
 public class Query 
@@ -320,13 +316,17 @@ public class Query
 	}
 
 	/**
-	 * Whether we should include the id in the select and group by, order by clauses
-	 * @return
+	 * Returns whether we should include the id in the select and group by, order by clauses.
+	 * @return whether the id should be included.
 	 */
     public boolean getIncludeId() {
         return includeId;
     }
 
+	/**
+	 * Sets whether we should include the id in the select and group by, order by clauses.
+	 * @param include whether the id should be included.
+	 */
     public void setIncludeId(boolean include) {
         includeId = include;
     }
