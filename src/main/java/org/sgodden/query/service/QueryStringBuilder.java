@@ -161,16 +161,37 @@ public class QueryStringBuilder {
 
     private void appendFromClauseForSimpleFilterCriterion(
             SimpleRestriction crit, StringBuffer buf, Set<String> aliases) {
+        // if the attribute comes from a related table
         if (QueryUtil.isRelatedColumn(crit.getAttributePath())) {
+            // if we haven't seen this path before
             if (!aliases.contains(QueryUtil.getClassAlias(crit
                     .getAttributePath()))) {
-                buf.append(" LEFT OUTER JOIN");
-                buf.append(" obj."
-                        + QueryUtil.getRelationName(crit.getAttributePath()));
-                buf.append(" AS "
-                        + QueryUtil.getClassAlias(crit.getAttributePath()));
-                // ensure we don't put this one in again
-                aliases.add(QueryUtil.getClassAlias(crit.getAttributePath()));
+                
+                String relationPath = QueryUtil.getRelationName(crit.getAttributePath());
+                String[] relationPaths= null;
+                if (relationPath.contains(".")) {
+                    relationPaths = relationPath.split("\\.");
+                } else {
+                    relationPaths = new String[] {relationPath};
+                }
+
+                StringBuffer thisPath = new StringBuffer();
+                for (int i = 0; i < relationPaths.length; i++) {
+                    String oldPath = thisPath.toString();
+                    if ("".equals(oldPath))
+                        oldPath = "obj";
+                    thisPath.append(relationPaths[i]);
+                    if (!aliases.contains(thisPath)) {
+                        buf.append(" LEFT OUTER JOIN ");
+                        buf.append(oldPath);
+                        buf.append(".");
+                        buf.append(relationPaths[i]);
+                        buf.append(" AS ");
+                        buf.append(thisPath.toString());
+                        // ensure we don't put this one in again
+                        aliases.add(thisPath.toString());
+                    }
+                }
             }
         }
     }
