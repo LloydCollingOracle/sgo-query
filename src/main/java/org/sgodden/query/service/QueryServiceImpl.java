@@ -237,6 +237,9 @@ public class QueryServiceImpl implements QueryService {
         }
 
         ret.setCachedPageRows(rows);
+        if (!query.getCalculateRowCount()) {
+        	ret.setRowCount(rows.size());
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("Query took "
