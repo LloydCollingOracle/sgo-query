@@ -16,11 +16,16 @@
 # ================================================================= */
 package org.sgodden.query;
 
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.sgodden.query.service.QueryService;
 
 /**
@@ -236,5 +241,41 @@ public class ResultSet implements Serializable {
         log.debug("Total rows: " + rowCount);
         this.rowCount = rowCount;
 	}
+
+	/**
+	 * Writes this result set out as xml to the specified
+	 * output stream.
+	 * @param out
+	 */
+    public void toXml(OutputStream out) {
+        Element root = new Element("ResultSet");
+        Document doc = new Document(root);
+        for (int i = 0; i < getRowCount(); i++) {
+        	ResultSetRow row = getRow(i);
+            Element rowE = new Element("Row");
+            root.addContent(rowE);
+            for (int col = 0; col < row.getColumns().length; col++) {
+            	ResultSetColumn column = row.getColumns()[col];
+            	QueryColumn qc = query.getColumns().get(col);
+                Element colE = new Element(legaliseColumnName(qc.getAttributePath()));
+                Object value = column.getValue();
+                if (value != null) {
+                    colE.setText(value.toString()); // FIXME - formatting of dates and numbers
+                }
+                rowE.addContent(colE);
+            }
+        }
+        XMLOutputter xmlout = new XMLOutputter();
+        xmlout.setFormat(Format.getPrettyFormat());
+        try {
+        	xmlout.output(doc, out);
+        } catch(Exception e) {
+        	throw new RuntimeException("Error generating XML", e);
+        }
+    }
+
+    private String legaliseColumnName(String columnName) {
+        return columnName.replaceAll(" ", "");
+    }
 
 }
