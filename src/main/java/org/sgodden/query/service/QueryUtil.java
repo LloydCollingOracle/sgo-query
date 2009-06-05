@@ -2,6 +2,8 @@ package org.sgodden.query.service;
 
 import java.util.Locale;
 
+import org.hibernate.type.StringType;
+import org.hibernate.usertype.UserType;
 import org.sgodden.query.Operator;
 
 /**
@@ -85,6 +87,11 @@ class QueryUtil {
             if (operator == Operator.CONTAINS || operator == Operator.STARTS_WITH) {
                 ret.append('%');
             }
+            ret.append("'");
+        }
+        else if (object instanceof Enum) {
+            ret.append("'");
+            ret.append(object.toString());
             ret.append("'");
         }
         else {
