@@ -91,7 +91,7 @@ public class WhereClauseBuilder {
             buf.append(" LIKE ");
             break;
         case EQUALS:
-            if (crit.getValues()[0] != null) {
+            if (crit.getValues() != null && crit.getValues()[0] != null) {
                 buf.append(" = ");
             }
             else {
@@ -111,7 +111,7 @@ public class WhereClauseBuilder {
             buf.append(" <= ");
             break;
         case NOT_EQUALS:
-            if (crit.getValues()[0] != null) {
+            if (crit.getValues() != null && crit.getValues()[0] != null) {
                 buf.append(" <> ");
             }
             else {
@@ -163,7 +163,8 @@ public class WhereClauseBuilder {
             }
         }
         else {
-            buf.append(QueryUtil.valueToString(crit.getAttributePath(), crit
+            if(crit.getValues() != null)
+                buf.append(QueryUtil.valueToString(crit.getAttributePath(), crit
                     .getValues()[0], crit.getOperator(), locale, crit.getIgnoreCase()).toString());
         }
 
@@ -176,14 +177,14 @@ public class WhereClauseBuilder {
     private void appendSimple(SimpleRestriction crit, StringBuffer buf) {
 
     	//We would never attempt to upper case a search for a null value
-        if (crit.getValues()[0] !=null && crit.getIgnoreCase()) {
+        if (crit.getValues() != null && crit.getValues()[0] !=null && crit.getIgnoreCase()) {
             buf.append("UPPER(");
         }
 
         buf.append(QueryUtil.getQualifiedAttributeIdentifier(crit
                 .getAttributePath()));
         
-        if (crit.getValues()[0] !=null &&  crit.getIgnoreCase()) {
+        if (crit.getValues() != null && crit.getValues()[0] !=null &&  crit.getIgnoreCase()) {
             buf.append(")");
         }
 
