@@ -17,7 +17,7 @@ public class ArbitraryRestriction implements Serializable, Restriction {
     private String restrictionText;
     private Object[] values;
 
-    public ArbitraryRestriction(String restrictionText, Object[] parameters) {
+    public ArbitraryRestriction(String restrictionText, Object[] values) {
         this.setRestrictionText(restrictionText);
         this.setValues(values);
     }
