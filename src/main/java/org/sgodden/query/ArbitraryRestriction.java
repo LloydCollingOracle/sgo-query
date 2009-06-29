@@ -1,10 +1,19 @@
 package org.sgodden.query;
+
+import java.io.Serializable;
+
 /**
  * An additional set of arbitrary Restrictions.
  * @author bwoods
  *
  */
-public class ArbitraryRestriction implements Restriction {
+public class ArbitraryRestriction implements Serializable, Restriction {
+
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = 20090629L;
+
     private String restrictionText;
     private Object[] values;
 

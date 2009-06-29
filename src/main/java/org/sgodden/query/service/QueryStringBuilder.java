@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.sgodden.query.AggregateFunction;
+import org.sgodden.query.ArbitraryRestriction;
 import org.sgodden.query.CompositeRestriction;
 import org.sgodden.query.LocaleUtils;
 import org.sgodden.query.Query;
@@ -145,7 +146,9 @@ public class QueryStringBuilder {
      */
     private void appendFromClauseForFilterCriterion(Restriction crit,
             StringBuffer buf, Set<String> aliases) {
-        if (crit instanceof SimpleRestriction) {
+        if (crit instanceof ArbitraryRestriction) {
+            // no from clause required
+        } else if (crit instanceof SimpleRestriction) {
             appendFromClauseForSimpleFilterCriterion((SimpleRestriction) crit,
                     buf, aliases);
         } else {
