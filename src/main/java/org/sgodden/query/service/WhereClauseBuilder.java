@@ -212,7 +212,9 @@ public class WhereClauseBuilder {
                 values.append(QueryUtil.valueToString(null,
                         crit.getValues()[0], Operator.EQUALS, query.getLocale(), true).toString());
         }
-        buf.append(crit.getRestrictionText().replaceAll("?", values.toString()));
+        String restrictionText = crit.getRestrictionText();
+        String criteria = restrictionText.replaceAll("\\?", values.toString());
+        buf.append(criteria);
     }
 
 }

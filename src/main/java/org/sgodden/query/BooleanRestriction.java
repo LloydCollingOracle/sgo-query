@@ -4,6 +4,7 @@ package org.sgodden.query;
  * @author bwoods
  *
  */
+@SuppressWarnings("serial")
 public class BooleanRestriction extends ArbitraryRestriction{
     public BooleanRestriction(Boolean value) {
         super("true = ? ", new Object[]{value});
