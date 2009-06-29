@@ -3,6 +3,7 @@ package org.sgodden.query.service;
 import java.util.Locale;
 
 import org.sgodden.query.AndRestriction;
+import org.sgodden.query.ArbitraryRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
 import org.sgodden.query.Query;
@@ -34,7 +35,10 @@ public class WhereClauseBuilder {
     }
     
     private void append(Restriction crit, StringBuffer buf) {
-        if (crit instanceof SimpleRestriction) {
+        if (crit instanceof ArbitraryRestriction) {
+            appendArbitrary((ArbitraryRestriction)crit, buf);
+        }
+        else if (crit instanceof SimpleRestriction) {
             appendSimple((SimpleRestriction)crit, buf);
         }
         else if (crit instanceof OrRestriction) {
@@ -190,6 +194,25 @@ public class WhereClauseBuilder {
 
         renderOperator(crit, buf);
         renderValues(crit, buf, query.getLocale());
+    }
+    
+    private void appendArbitrary(ArbitraryRestriction crit, StringBuffer buf) {
+        StringBuffer values = new StringBuffer();
+        if (crit.getValues().length > 1) {
+            for (int i = 0; i < crit.getValues().length; i++) {
+                if (i > 0) {
+                    values.append(',');
+                }
+                values.append(QueryUtil.valueToString(null,
+                        crit.getValues()[i], Operator.IN, query.getLocale(), true).toString());
+            }
+        }
+        else {
+            if(crit.getValues() != null)
+                values.append(QueryUtil.valueToString(null,
+                        crit.getValues()[0], Operator.EQUALS, query.getLocale(), true).toString());
+        }
+        buf.append(crit.getRestrictionText().replaceAll("?", values.toString()));
     }
 
 }
