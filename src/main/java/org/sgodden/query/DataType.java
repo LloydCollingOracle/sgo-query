@@ -24,6 +24,7 @@ public enum DataType {
 	
 	STRING,
 	INTEGER,
+	DATE,
 	TIMESTAMP,
 	LONG,
 	BOOLEAN,

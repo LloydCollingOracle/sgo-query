@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
+import org.hibernate.type.CalendarDateType;
 import org.hibernate.type.CalendarType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.LongType;
@@ -155,8 +156,11 @@ public class QueryServiceImpl implements QueryService {
             locale = Locale.getDefault();
         }
 
-        DateFormat dateformat = DateFormat.getDateTimeInstance(
+        DateFormat timestampformat = DateFormat.getDateTimeInstance(
                 DateFormat.SHORT, DateFormat.SHORT, locale);
+
+        DateFormat dateformat = DateFormat.getDateInstance(
+                DateFormat.SHORT, locale);
 
         while (it.hasNext()) {
             Object[] row = (Object[]) it.next();
@@ -205,16 +209,15 @@ public class QueryServiceImpl implements QueryService {
                         col.setValue(value);
                     }
                 }
-                else if (propertyType instanceof CalendarType) { // FIXME -
-                                                                    // should
-                                                                    // transfer
-                                                                    // in a
-                                                                    // standard
-                                                                    // format
-                                                                    // such as
-                                                                    // internet
-                                                                    // format
+                else if (propertyType instanceof CalendarType) {
                     col.setDataType(DataType.TIMESTAMP);
+                    if (value != null) {
+                        Calendar cal = (Calendar) value;
+                        col.setValue(timestampformat.format(cal.getTime()));
+                    }
+                }
+                else if (propertyType instanceof CalendarDateType) {
+                    col.setDataType(DataType.DATE);
                     if (value != null) {
                         Calendar cal = (Calendar) value;
                         col.setValue(dateformat.format(cal.getTime()));
