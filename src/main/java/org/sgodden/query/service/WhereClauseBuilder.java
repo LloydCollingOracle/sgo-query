@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import org.sgodden.query.AndRestriction;
 import org.sgodden.query.ArbitraryRestriction;
+import org.sgodden.query.NotRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
 import org.sgodden.query.Query;
@@ -20,8 +21,8 @@ import org.sgodden.query.SimpleRestriction;
  */
 public class WhereClauseBuilder {
     
-	//private final transient static Log log = LogFactory.getLog(WhereClauseBuilder.class);
-	
+    //private final transient static Log log = LogFactory.getLog(WhereClauseBuilder.class);
+    
     private Query query;
     
     public StringBuffer buildWhereClause(Query query) {
@@ -47,8 +48,17 @@ public class WhereClauseBuilder {
         else if (crit instanceof AndRestriction) {
             appendAnd((AndRestriction)crit, buf);
         }
+        else if (crit instanceof NotRestriction) {
+            appendNot((NotRestriction)crit, buf);
+        }
     }
     
+    private void appendNot(NotRestriction crit, StringBuffer buf) {
+        buf.append("NOT( ");
+        append(crit.getChild(), buf);
+        buf.append(" )");
+    }
+
     private void appendOr(OrRestriction crit, StringBuffer buf) {
         if (crit.getRestrictions().size() < 2) {
             throw new IllegalArgumentException("An or filter criterion must have at least two sub-criteria");
@@ -180,7 +190,7 @@ public class WhereClauseBuilder {
     
     private void appendSimple(SimpleRestriction crit, StringBuffer buf) {
 
-    	//We would never attempt to upper case a search for a null value
+        //We would never attempt to upper case a search for a null value
         if (crit.getValues() != null && crit.getValues()[0] !=null && crit.getIgnoreCase()) {
             buf.append("UPPER(");
         }

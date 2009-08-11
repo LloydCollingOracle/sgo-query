@@ -9,6 +9,7 @@ import org.sgodden.query.AggregateFunction;
 import org.sgodden.query.ArbitraryRestriction;
 import org.sgodden.query.CompositeRestriction;
 import org.sgodden.query.LocaleUtils;
+import org.sgodden.query.NotRestriction;
 import org.sgodden.query.Query;
 import org.sgodden.query.QueryColumn;
 import org.sgodden.query.Restriction;
@@ -151,6 +152,8 @@ public class QueryStringBuilder {
         } else if (crit instanceof SimpleRestriction) {
             appendFromClauseForSimpleFilterCriterion((SimpleRestriction) crit,
                     buf, aliases);
+        } else if (crit instanceof NotRestriction) {
+            appendFromClauseForFilterCriterion(((NotRestriction)crit).getChild(), buf, aliases);
         } else {
             CompositeRestriction comp = (CompositeRestriction) crit;
             for (Restriction subcrit : comp.getRestrictions()) {
