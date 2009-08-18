@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
+import org.hibernate.type.BooleanType;
 import org.hibernate.type.CalendarDateType;
 import org.hibernate.type.CalendarType;
 import org.hibernate.type.IntegerType;
@@ -222,6 +223,12 @@ public class QueryServiceImpl implements QueryService {
                         Calendar cal = (Calendar) value;
                         col.setValue(dateformat.format(cal.getTime()));
                     }
+                }
+                else if (propertyType instanceof BooleanType) {
+                	col.setDataType(DataType.BOOLEAN);
+                	if (value != null) {
+                		col.setValue(value);
+                	}
                 }
                 else {
                     log.warn("Unknown type: " + propertyType.getClass().getName());
