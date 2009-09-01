@@ -2,8 +2,9 @@ package org.sgodden.query.service;
 
 import java.util.Locale;
 
-import org.hibernate.type.StringType;
-import org.hibernate.usertype.UserType;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.joda.time.base.BaseSingleFieldPeriod;
 import org.sgodden.query.Operator;
 
 /**
@@ -11,7 +12,7 @@ import org.sgodden.query.Operator;
  * @author sgodden
  *
  */
-class QueryUtil {
+public class QueryUtil {
     
 
     static String getUnQualifiedAttributeIdentifier(String attributePath) {
@@ -87,6 +88,16 @@ class QueryUtil {
             if (operator == Operator.CONTAINS || operator == Operator.STARTS_WITH) {
                 ret.append('%');
             }
+            ret.append("'");
+        }
+        else if (object instanceof BaseSingleFieldPeriod) {
+            DateTime now = new DateTime();
+            
+            Period p = ((BaseSingleFieldPeriod)object).toPeriod();
+            now = now.plus(p);
+
+            ret.append("'");
+            ret.append(now.toString());
             ret.append("'");
         }
         else if (object instanceof Enum) {
