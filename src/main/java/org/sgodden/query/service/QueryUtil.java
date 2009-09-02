@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.hibernate.Query;
 import org.hibernate.impl.AbstractQueryImpl;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.joda.time.base.BaseSingleFieldPeriod;
 import org.sgodden.query.Operator;
 
 /**
@@ -90,6 +93,14 @@ public class QueryUtil {
                 retBuf.append('%');
             }
             ret = retBuf.toString();
+        }
+        else if (object instanceof BaseSingleFieldPeriod) {
+            DateTime now = new DateTime();
+            
+            Period p = ((BaseSingleFieldPeriod)object).toPeriod();
+            now = now.plus(p);
+
+            ret = now;
         }
         else {
         	ret = object;
