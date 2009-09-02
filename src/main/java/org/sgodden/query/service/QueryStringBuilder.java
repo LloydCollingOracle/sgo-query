@@ -108,7 +108,11 @@ public class QueryStringBuilder {
         
         org.hibernate.Query q = session.createQuery(buf.toString());
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            q.setParameter(entry.getKey(), entry.getValue());
+        	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
+        		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
+        	} else {
+        		q.setParameter((String)entry.getKey(), entry.getValue());
+        	}
         }
 
         return q;
