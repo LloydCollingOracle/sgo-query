@@ -302,12 +302,12 @@ public class QueryStringBuilder {
 
                 buf.append(qualifiedAttributeIdentifier);
                 buf.append(" IN( :");
-                buf.append(qualifiedAttributeIdentifier);
+                buf.append(qualifiedAttributeIdentifier.replace(".", ""));
                 buf.append(" ) OR ");
                 buf.append(qualifiedAttributeIdentifier);
                 buf.append(" IS NULL) ");
                 
-                ret.put(qualifiedAttributeIdentifier, localeStrings);
+                ret.put(qualifiedAttributeIdentifier.replace(".", ""), localeStrings);
             }
         }
         return ret;
