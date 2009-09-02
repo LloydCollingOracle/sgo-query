@@ -2,6 +2,8 @@ package org.sgodden.query.service;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.HashMap;
+
 import org.sgodden.query.AndRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
@@ -33,11 +35,11 @@ public class WhereClauseBuilderTest {
                                         Operator.EQUALS,
                                         new Object[] { "ASDASD" }))));
 
-        StringBuffer sb = new WhereClauseBuilder().buildWhereClause(query);
+        StringBuffer sb = new WhereClauseBuilder().buildWhereClause(query, new HashMap<String, Object>());
 
         assertEquals(
                 sb.toString(),
-                " WHERE ( ( obj.code = 'ASDASD' AND contact.code = 'ASDASD' ) OR ( obj.code = 'ASDASD' AND obj.code = 'ASDASD' ) )");
+                " WHERE ( ( obj.code = :objcode0 AND contact.code = :contactcode1 ) OR ( obj.code = :objcode2 AND obj.code = :objcode3 ) )");
     }
 
 }

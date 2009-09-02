@@ -1,7 +1,13 @@
 package org.sgodden.query.service;
 
-import static org.testng.Assert.assertEquals;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.classextension.EasyMock.createMock;
+import static org.easymock.classextension.EasyMock.createNiceMock;
+import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.verify;
 
+import org.hibernate.Session;
 import org.sgodden.query.AndRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
@@ -45,16 +51,26 @@ public class QueryStringBuilderTest {
                                                                 "code",
                                                                 Operator.EQUALS,
                                                                 new Object[] { "ASDASD" }))));
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
+        
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact " +
+        		"WHERE ( ( obj.code = :objcode0 AND contact.code = :contactcode1 ) OR " +
+        		"( obj.code = :objcode2 AND obj.code = :objcode3 ) ) ORDER BY 2, 1"))).andReturn(q);
+        
+        expect(s.createQuery(eq("SELECT COUNT(distinct obj.id)  FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact " +
+        		"WHERE ( ( obj.code = :objcode0 AND contact.code = :contactcode1 ) OR " +
+        		"( obj.code = :objcode2 AND obj.code = :objcode3 ) )"))).andReturn(q);
+        
+        replay(s);
+        replay(q);
 
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        assertEquals(
-                queryString,
-                "SELECT obj.id, obj.code FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact WHERE ( ( obj.code = 'ASDASD' AND contact.code = 'ASDASD' ) OR ( obj.code = 'ASDASD' AND obj.code = 'ASDASD' ) ) ORDER BY 2, 1");
-
-        queryString = new QueryStringBuilder().buildCountQuery(query);
-        assertEquals(
-                queryString,
-                "SELECT COUNT(distinct obj.id)  FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact WHERE ( ( obj.code = 'ASDASD' AND contact.code = 'ASDASD' ) OR ( obj.code = 'ASDASD' AND obj.code = 'ASDASD' ) )");
+        new QueryStringBuilder().buildQuery(s, query);
+        new QueryStringBuilder().buildCountQuery(s, query);
+        
+        verify(s);
+        verify(q);
     }
 
     public void testStartsWithIgnoreCase() {
@@ -62,11 +78,19 @@ public class QueryStringBuilderTest {
                 .addColumn("code").setFilterCriterion(
                         new SimpleRestriction("code",
                                 Operator.STARTS_WITH, "AsdAsd").setIgnoreCase(true));
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
+        
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj WHERE UPPER(obj.code) LIKE :objcode0 ORDER BY 2, 1"))).andReturn(q);
+        
+        replay(s);
+        replay(q);
 
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        assertEquals(
-                queryString,
-                "SELECT obj.id, obj.code FROM java.lang.String AS obj WHERE UPPER(obj.code) LIKE 'ASDASD%' ORDER BY 2, 1");
+        new QueryStringBuilder().buildQuery(s, query);
+        
+        verify(s);
+        verify(q);
 
     }
 
@@ -77,9 +101,19 @@ public class QueryStringBuilderTest {
     public void testNullFilterCriterion() {
         Query query = new Query().setObjectClassName(String.class.getName())
                 .addColumn("code");
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        assertEquals(queryString,
-                "SELECT obj.id, obj.code FROM java.lang.String AS obj ORDER BY 2, 1");
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createMock(org.hibernate.Query.class);
+        
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj ORDER BY 2, 1"))).andReturn(q);
+        
+        replay(s);
+        replay(q);
+        
+        new QueryStringBuilder().buildQuery(s, query);
+        
+        verify(s);
+        verify(q);
     }
 
     /**
@@ -88,9 +122,19 @@ public class QueryStringBuilderTest {
     public void testMultiDepthSelection() {
         Query query = new Query().setObjectClassName(String.class.getName())
                 .addColumn("blah.foo");
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        assertEquals(queryString,
-                "SELECT obj.id, blah.foo FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah ORDER BY 2, 1");
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createMock(org.hibernate.Query.class);
+        
+        expect(s.createQuery(eq("SELECT obj.id, blah.foo FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah ORDER BY 2, 1"))).andReturn(q);
+        
+        replay(s);
+        replay(q);
+        
+        new QueryStringBuilder().buildQuery(s, query);
+        
+        verify(s);
+        verify(q);
     }
 
     /**
@@ -99,9 +143,18 @@ public class QueryStringBuilderTest {
     public void testMultiDepthSelection2() {
         Query query = new Query().setObjectClassName(String.class.getName())
                 .addColumn("blah.foo.bar");
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        assertEquals(queryString,
-                "SELECT obj.id, blahfoo.bar FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah LEFT OUTER JOIN blah.foo AS blahfoo ORDER BY 2, 1");
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createMock(org.hibernate.Query.class);
+        
+        expect(s.createQuery(eq("SELECT obj.id, blahfoo.bar FROM java.lang.String AS obj LEFT OUTER JOIN obj.blah AS blah LEFT OUTER JOIN blah.foo AS blahfoo ORDER BY 2, 1"))).andReturn(q);
+        
+        replay(s);
+        replay(q);
+        new QueryStringBuilder().buildQuery(s, query);
+        
+        verify(s);
+        verify(q);
     }
 
 }

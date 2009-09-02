@@ -114,16 +114,13 @@ public class QueryServiceImpl implements QueryService {
             return ret;
         }
 
-        String queryString = new QueryStringBuilder().buildQuery(query);
-        log.debug(queryString);
+        org.hibernate.Query hq = new QueryStringBuilder().buildQuery(sessionProvider.get(), query);
+        log.debug(hq.getQueryString());
         
         if (query.getFetchSize() > 0 && query.getMaxRows() > 0) {
             throw new IllegalArgumentException(
                     "Setting fetch size and max rows is contradictory");
         }
-
-        org.hibernate.Query hq = sessionProvider.get()
-                .createQuery(queryString);
 
         if (query.getRowOffset() > 0) {
             log.debug("Setting offset: " + query.getRowOffset());
@@ -268,11 +265,9 @@ public class QueryServiceImpl implements QueryService {
 
         long ret = 0;
         
-        String queryString = new QueryStringBuilder().buildCountQuery(query);
+        org.hibernate.Query hq = new QueryStringBuilder().buildCountQuery(sessionProvider.get(), query);
 
-        log.debug("Calculating total rows with query: " + queryString);
-        org.hibernate.Query hq = sessionProvider.get()
-                .createQuery(queryString);
+        log.debug("Calculating total rows with query: " + hq.getQueryString());
 
         Date start = null;
         if (log.isDebugEnabled()) {

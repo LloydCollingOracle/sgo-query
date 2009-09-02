@@ -1,10 +1,13 @@
 package org.sgodden.query.service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 import org.sgodden.query.AggregateFunction;
 import org.sgodden.query.ArbitraryRestriction;
 import org.sgodden.query.CompositeRestriction;
@@ -33,12 +36,25 @@ public class QueryStringBuilder {
      *            the query.
      * @return An HQL query string to determine the number of matching rows.
      */
-    public String buildCountQuery(Query query) {
+    @SuppressWarnings("unchecked")
+	public org.hibernate.Query buildCountQuery(Session session, Query query) {
         if (!query.getIncludeId()) {
-            String normalQuery = buildQuery(query);
+        	org.hibernate.Query normalHQLQuery = buildQuery(session, query);
+        	String normalQuery = normalHQLQuery.getQueryString();
             normalQuery = normalQuery.substring(0, normalQuery.indexOf("ORDER BY"));
             String queryString = "select count(*) from ( " + normalQuery + ") as subq";
-            return queryString;
+            
+            org.hibernate.Query q = session.createQuery(queryString);
+            Map parameterMap = QueryUtil.getParameterMap(q);
+            for (Object parameterEntry : parameterMap.entrySet()) {
+            	Map.Entry entry = (Map.Entry)parameterEntry;
+            	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
+            		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
+            	} else {
+            		q.setParameter((String)entry.getKey(), entry.getValue());
+            	}
+            }
+            return q;
         }
         
         StringBuffer buf = new StringBuffer("SELECT COUNT(distinct obj.id) ");
@@ -55,12 +71,21 @@ public class QueryStringBuilder {
             LOG.debug("No filter criteria specified for the query");
         }
 
-        appendWhereClause(query, buf);
+        Map<String, Object> parameters = appendWhereClause(query, buf);
+        
+        org.hibernate.Query q = session.createQuery(buf.toString());
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+        	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
+        		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
+        	} else {
+        		q.setParameter((String)entry.getKey(), entry.getValue());
+        	}
+        }
 
-        return buf.toString();
+        return q;
     }
 
-    public String buildQuery(Query query) {
+    public org.hibernate.Query buildQuery(Session session, Query query) {
 
         StringBuffer buf = getSelectClause(query);
 
@@ -75,13 +100,18 @@ public class QueryStringBuilder {
             LOG.debug("No filter criteria specified for the query");
         }
 
-        appendWhereClause(query, buf);
+        Map<String, Object> parameters = appendWhereClause(query, buf);
 
         appendGroupByClause(query, buf);
 
         appendOrderByClause(query, buf);
+        
+        org.hibernate.Query q = session.createQuery(buf.toString());
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            q.setParameter(entry.getKey(), entry.getValue());
+        }
 
-        return buf.toString();
+        return q;
     }
 
     /**
@@ -235,14 +265,27 @@ public class QueryStringBuilder {
         }
     }
 
-    private void appendLocaleWhereClause(Query query, StringBuffer buf) {
+    /**
+     * Appends a locale-dependant entity where clause.
+     * @param query
+     * @param buf
+     * @return A map of named parameters
+     */
+    private Map<String, Object> appendLocaleWhereClause(Query query, StringBuffer buf) {
 
         boolean whereAppended = false;
         if (query.getFilterCriterion() != null) {
             whereAppended = true;
         }
+        Map<String, Object> ret = new HashMap<String, Object>();
 
         Locale[] locales = LocaleUtils.getLocaleHierarchy(query.getLocale());
+        String[] localeStrings = new String[locales.length];
+        for (int i = 0; i < localeStrings.length; i++) {
+        	if (locales[i] != null) {
+        		localeStrings[i] = locales[i].toString();
+        	}
+		}
 
         for (QueryColumn col : query.getColumns()) {
             if (col.getAggregateFunction() == AggregateFunction.LOCALE) {
@@ -258,29 +301,16 @@ public class QueryStringBuilder {
                         .getQualifiedAttributeIdentifier(col.getAttributePath()));
 
                 buf.append(qualifiedAttributeIdentifier);
-                buf.append(" IN(");
-
-                int index = 0;
-                for (Locale locale : locales) {
-                    if (locale != null) {
-                        if (index > 0) {
-                            buf.append(',');
-                        }
-                        index++;
-
-                        buf.append('\'');
-                        buf.append(locale.toString());
-                        buf.append('\'');
-                    }
-                }
-
-                buf.append(") ");
-
-                buf.append(" OR ");
+                buf.append(" IN( :");
+                buf.append(qualifiedAttributeIdentifier);
+                buf.append(" ) OR ");
                 buf.append(qualifiedAttributeIdentifier);
                 buf.append(" IS NULL) ");
+                
+                ret.put(qualifiedAttributeIdentifier, localeStrings);
             }
         }
+        return ret;
     }
 
     /**
@@ -401,11 +431,16 @@ public class QueryStringBuilder {
 
     }
 
-    private void appendWhereClause(Query query, StringBuffer buf) {
-        buf.append(new WhereClauseBuilder().buildWhereClause(query));
+    private Map<String, Object> appendWhereClause(Query query, StringBuffer buf) {
+    	Map<String, Object> ret = new HashMap<String, Object>();
+        buf.append(new WhereClauseBuilder().buildWhereClause(query, ret));
         // if any of the columns had the LOCALE aggregate function then we need
         // to select only the valid locales for the locale in the query
-        appendLocaleWhereClause(query, buf);
+        Map<String, Object> localeParms = appendLocaleWhereClause(query, buf);
+        for (Map.Entry<String, Object> entry : localeParms.entrySet()) {
+        	ret.put(entry.getKey(), entry.getValue());
+        }
+        return ret;
     }
 
     private String getQualifiedLocaleIdentifier(

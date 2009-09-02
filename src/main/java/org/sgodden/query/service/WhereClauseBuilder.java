@@ -1,6 +1,7 @@
 package org.sgodden.query.service;
 
 import java.util.Locale;
+import java.util.Map;
 
 import org.sgodden.query.AndRestriction;
 import org.sgodden.query.ArbitraryRestriction;
@@ -24,9 +25,11 @@ public class WhereClauseBuilder {
     //private final transient static Log log = LogFactory.getLog(WhereClauseBuilder.class);
     
     private Query query;
+    private Map<String, Object> parameterMap;
     
-    public StringBuffer buildWhereClause(Query query) {
+    public StringBuffer buildWhereClause(Query query, Map<String, Object> parameterMap) {
         this.query = query;
+        this.parameterMap = parameterMap;
         StringBuffer buf = new StringBuffer();
         if (query.getFilterCriterion() != null) {
             buf.append(" WHERE ");
@@ -157,29 +160,35 @@ public class WhereClauseBuilder {
      * @param crit
      * @param buf
      */
-    public static void renderValues(SimpleRestriction crit, StringBuffer buf, Locale locale) {
+    public void renderValues(SimpleRestriction crit, StringBuffer buf, Locale locale) {
+    	String parmName = QueryUtil.getQualifiedAttributeIdentifier(crit
+                .getAttributePath()).replace(".", "") + parameterMap.size();
         if (crit.getOperator() == Operator.BETWEEN
                 || crit.getOperator() == Operator.NOT_BETWEEN) {
-            buf.append(QueryUtil.valueToString(crit.getAttributePath(), crit
+            buf.append(":");
+            buf.append(parmName);
+            buf.append("1 AND :");
+            buf.append(parmName);
+            buf.append("2");
+            
+            parameterMap.put(parmName + "1", QueryUtil.valueToParameter(crit.getAttributePath(), crit
                     .getValues()[0], crit.getOperator(), locale, crit.getIgnoreCase()));
-            buf.append(" AND ");
-            buf.append(QueryUtil.valueToString(crit.getAttributePath(), crit
+            parameterMap.put(parmName + "2", QueryUtil.valueToParameter(crit.getAttributePath(), crit
                     .getValues()[1], crit.getOperator(), locale, crit.getIgnoreCase()));
         }
         else if (crit.getOperator() == Operator.IN
                 || crit.getOperator() == Operator.NOT_IN) {
-            for (int i = 0; i < crit.getValues().length; i++) {
-                if (i > 0) {
-                    buf.append(',');
-                }
-                buf.append(QueryUtil.valueToString(crit.getAttributePath(),
-                        crit.getValues()[i], crit.getOperator(), locale, crit.getIgnoreCase()));
-            }
+            buf.append(":");
+            buf.append(parmName);
+            parameterMap.put(parmName, crit.getValues());
         }
         else {
-            if(crit.getValues() != null)
-                buf.append(QueryUtil.valueToString(crit.getAttributePath(), crit
-                    .getValues()[0], crit.getOperator(), locale, crit.getIgnoreCase()).toString());
+            if(crit.getValues() != null) {
+                buf.append(":");
+                buf.append(parmName);
+                parameterMap.put(parmName, QueryUtil.valueToParameter(crit.getAttributePath(), crit
+                        .getValues()[0], crit.getOperator(), locale, crit.getIgnoreCase()));
+            }
         }
 
         if (crit.getOperator() == Operator.IN
@@ -213,13 +222,13 @@ public class WhereClauseBuilder {
                 if (i > 0) {
                     values.append(',');
                 }
-                values.append(QueryUtil.valueToString(null,
+                values.append(QueryUtil.valueToParameter(null,
                         crit.getValues()[i], Operator.IN, query.getLocale(), true).toString());
             }
         }
         else {
             if(crit.getValues() != null)
-                values.append(QueryUtil.valueToString(null,
+                values.append(QueryUtil.valueToParameter(null,
                         crit.getValues()[0], Operator.EQUALS, query.getLocale(), true).toString());
         }
         String restrictionText = crit.getRestrictionText();

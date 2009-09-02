@@ -1,10 +1,11 @@
 package org.sgodden.query.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
+import java.util.Map;
 
-import org.joda.time.DateTime;
-import org.joda.time.Period;
-import org.joda.time.base.BaseSingleFieldPeriod;
+import org.hibernate.Query;
+import org.hibernate.impl.AbstractQueryImpl;
 import org.sgodden.query.Operator;
 
 /**
@@ -64,51 +65,34 @@ public class QueryUtil {
                 + getFinalAttributeName(attributePath);
     }
 
-    static StringBuffer valueToString(
+    static Object valueToParameter(
     		String attributePath, 
     		Object object, 
     		Operator operator, 
     		Locale locale,
     		boolean ignoreCase) {
-        StringBuffer ret = new StringBuffer();
+        Object ret = null;
         
         if (object instanceof String
                 && !("id"
                         .equals(getUnQualifiedAttributeIdentifier(attributePath))) // the id is always numeric
         ) {
-            ret.append("'");
+        	StringBuffer retBuf = new StringBuffer();
             if (operator == Operator.CONTAINS || operator == Operator.ENDS_WITH) {
-                ret.append('%');
+                retBuf.append('%');
             }
             String value = object.toString();
             if (ignoreCase) {
                 value = value.toUpperCase(locale);
             }
-            ret.append(value);
+            retBuf.append(value);
             if (operator == Operator.CONTAINS || operator == Operator.STARTS_WITH) {
-                ret.append('%');
+                retBuf.append('%');
             }
-            ret.append("'");
-        }
-        else if (object instanceof BaseSingleFieldPeriod) {
-            DateTime now = new DateTime();
-            
-            Period p = ((BaseSingleFieldPeriod)object).toPeriod();
-            now = now.plus(p);
-
-            ret.append("'");
-            ret.append(now.toString());
-            ret.append("'");
-        }
-        else if (object instanceof Enum) {
-            ret.append("'");
-            ret.append(object.toString());
-            ret.append("'");
+            ret = retBuf.toString();
         }
         else {
-        	if(object!=null){
-        		ret.append(object.toString());
-        	}
+        	ret = object;
         }
         return ret;
     }
@@ -130,4 +114,21 @@ public class QueryUtil {
     static int getRelationDepth(String attributePath) {
         return attributePath.split("\\.").length - 1;
     }
+
+    @SuppressWarnings("unchecked")
+	public static Map getParameterMap(Query q) {
+		if (q instanceof AbstractQueryImpl) {
+			try {
+				return (Map)q.getClass().getMethod("getNamedParams", (Class[])null).invoke(q, (Object[])null);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException("Failed to retrieve named parameters from query", e);
+			} catch (InvocationTargetException e) {
+				throw new RuntimeException("Failed to retrieve named parameters from query", e);
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException("Failed to retrieve named parameters from query", e);
+			}
+		} else {
+			throw new IllegalArgumentException("don't know how to extract the named parameters from queries of type " + q);
+		}
+	}
 }
