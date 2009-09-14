@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.LocalDate;
 import org.sgodden.query.DataType;
 import org.sgodden.query.Query;
 import org.sgodden.query.ResultSet;
@@ -18,13 +19,14 @@ public class ResultSetFormatterTest {
 		q.setObjectClassName("org.example.Order");
 		q.addColumn("orderNumber");
 		q.addColumn("customerName");
+		q.addColumn("date");
 		
 		ResultSet rs = new ResultSet();
 		rs.setQuery(q);
 		
 		List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
 		for (int i = 0; i < 2; i++) {
-			rows.add(makeRow(new String[]{"number " + i, "name " + i}));
+			rows.add(makeRow(new Object[]{"number " + i, "name " + i, new LocalDate()}));
 		}
 		
 		rs.setCachedPageRows(rows);
@@ -38,11 +40,11 @@ public class ResultSetFormatterTest {
 		
 	}
 	
-	private static ResultSetRow makeRow(String[] values) {
+	private static ResultSetRow makeRow(Object[] values) {
 		ResultSetRow row = new ResultSetRow();
 		ResultSetColumn[] cols = new ResultSetColumn[values.length];
 		int i = 0;
-		for (String value : values) {
+		for (Object value : values) {
 			ResultSetColumn col = new ResultSetColumn();
 			col.setDataType(DataType.STRING);
 			col.setValue(value);
