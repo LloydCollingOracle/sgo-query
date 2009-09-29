@@ -48,7 +48,8 @@ import com.google.inject.Provider;
  * An implementation of the query service which uses hibernate.
  * @author goddens
  */
-public class QueryServiceImpl implements QueryService {
+@SuppressWarnings("serial")
+public class QueryServiceImpl implements QueryService, Serializable {
 
     /**
      * The log.

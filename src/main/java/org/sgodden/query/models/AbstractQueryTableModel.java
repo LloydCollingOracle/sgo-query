@@ -38,6 +38,8 @@ import org.sgodden.query.SimpleRestriction;
 import org.sgodden.query.SortData;
 import org.sgodden.query.service.QueryService;
 
+import com.google.inject.Provider;
+
 /**
  * Abstract implementation of the {@link QueryTableModel} interface.
  * @author goddens
@@ -49,7 +51,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     /**
      * The query service which will actually execute the queries.
      */
-    private QueryService service;
+    private Provider < QueryService > serviceProvider;
 
     /**
      * The filter criterion used on the last query refresh.
@@ -60,8 +62,8 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * Sets the query service to be used to run the queries.
      * @param queryService the query service.
      */
-    public void setQueryService(QueryService queryService) {
-        this.service = queryService;
+    public void setQueryServiceProvider(Provider < QueryService > queryService) {
+        this.serviceProvider = queryService;
     }
 
     /**
@@ -96,9 +98,9 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * execute the queries.
      * @param service the query service.
      */
-    public AbstractQueryTableModel(QueryService service) {
+    public AbstractQueryTableModel(Provider < QueryService > service) {
         this();
-        this.service = service;
+        this.serviceProvider = service;
     }
 
     /**
@@ -248,10 +250,10 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     }
     
     private QueryService getQueryService() {
-        if (service == null) {
+        if (serviceProvider == null) {
             throw new NullPointerException("QueryService is null - did you forget to set it?");
         }
-        return service;
+        return serviceProvider.get();
     }
 
     /**

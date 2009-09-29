@@ -16,16 +16,11 @@
 # ================================================================= */
 package org.sgodden.query;
 
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.sgodden.query.service.QueryService;
 
 /**

@@ -16,9 +16,11 @@
 */
 package org.sgodden.query;
 
+import java.io.Serializable;
+
 /**
  * A marker interface for different criterion implementations.
  * @author Simon Godden
  */
-public interface Restriction {
+public interface Restriction extends Serializable {
 }
