@@ -150,6 +150,12 @@ public class WhereClauseBuilder {
         case STARTS_WITH:
             buf.append(" LIKE ");
             break;
+        case EMPTY:
+            buf.append(" IS EMPTY");
+            break;
+        case NOT_EMPTY:
+            buf.append(" IS NOT EMPTY ");
+            break;
         default:
             throw new IllegalArgumentException("Unsupported operator: " + crit.getOperator());
         }
@@ -161,9 +167,12 @@ public class WhereClauseBuilder {
      * @param buf
      */
     public void renderValues(SimpleRestriction crit, StringBuffer buf, Locale locale) {
-    	String parmName = QueryUtil.getQualifiedAttributeIdentifier(crit
+        String parmName = QueryUtil.getQualifiedAttributeIdentifier(crit
                 .getAttributePath()).replace(".", "") + parameterMap.size();
-        if (crit.getOperator() == Operator.BETWEEN
+        if (crit.getOperator() == Operator.EMPTY || crit.getOperator() == Operator.NOT_EMPTY){
+            return;
+        }
+        else if (crit.getOperator() == Operator.BETWEEN
                 || crit.getOperator() == Operator.NOT_BETWEEN) {
             buf.append(":");
             buf.append(parmName);

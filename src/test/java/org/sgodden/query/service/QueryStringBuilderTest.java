@@ -156,5 +156,52 @@ public class QueryStringBuilderTest {
         verify(s);
         verify(q);
     }
+    
+    /**
+     * Tests the correct dealing with collections.
+     */
+    public void testCollectionQuery() {
+        Query query = new Query().setObjectClassName(String.class.getName())
+        .addColumn("code").setFilterCriterion(
+                new SimpleRestriction("contact",
+                        Operator.EMPTY, null));
+
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
+
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj WHERE obj.contact IS EMPTY ORDER BY 2, 1"))).andReturn(q);
+
+        replay(s);
+        replay(q);
+
+        new QueryStringBuilder().buildQuery(s, query);
+
+        verify(s);
+        verify(q);
+    }
+    
+    /**
+     * Tests the correct dealing with collections on 2nd & 3rd level attributes
+     */
+    public void testMultiLevelCollectionQuery() {
+        Query query = new Query().setObjectClassName(String.class.getName())
+        .addColumn("code").setFilterCriterion(new AndRestriction(new SimpleRestriction("contact", Operator.NOT_EMPTY, null))
+                                            .and(new SimpleRestriction("contact.roles", Operator.NOT_EMPTY, null))
+                                            .and(new SimpleRestriction("contact.roles.users", Operator.EMPTY, null)));
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
+
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact LEFT OUTER JOIN obj.contact AS contact LEFT OUTER JOIN contact.roles AS contactroles WHERE ( obj.contact IS NOT EMPTY  AND contact.roles IS NOT EMPTY  AND contactroles.users IS EMPTY ) ORDER BY 2, 1"))).andReturn(q);
+
+        replay(s);
+        replay(q);
+
+        new QueryStringBuilder().buildQuery(s, query);
+
+        verify(s);
+        verify(q);
+    }
+
 
 }
