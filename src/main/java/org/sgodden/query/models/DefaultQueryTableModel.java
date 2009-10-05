@@ -65,4 +65,9 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel {
         return columnIdentifiers;
     }
 
+    @Override
+    public void setColumnIdentifiers(Object[] columnIdentifiers) {
+        this.columnIdentifiers = columnIdentifiers;
+    }
+
 }

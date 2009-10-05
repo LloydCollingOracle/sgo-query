@@ -172,6 +172,12 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     public abstract Object[] getColumnIdentifiers();
 
     /**
+     * Sets the column identifiers
+     * @param columnIdentifiers
+     */
+    public abstract void setColumnIdentifiers(Object[] columnIdentifiers);
+    
+    /**
      * Returns the column name for the specified index, zero-indexed.
      * @param column the column index, zero-indexed.
      */
