@@ -90,6 +90,23 @@ public class ResultSetFormatter {
         }
     }
 
+    /**
+     * Transforms the passed result sets to XML amd returns a Document.
+     * 
+     * @param resultSets
+     *            the result sets to transform.
+     * @return a Document
+     */
+    public Document toXml(ResultSet... resultSets) {
+        Element root = new Element("ResultSet");
+        Document doc = new Document(root);
+
+        for (ResultSet resultSet : resultSets) {
+            toXml(resultSet, root);
+        }
+        return doc;
+    }
+
     private String legaliseColumnName(String columnName) {
         return columnName.replaceAll(" ", "");
     }
