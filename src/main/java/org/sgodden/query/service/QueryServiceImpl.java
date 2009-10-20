@@ -229,7 +229,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
                 	}
                 }
                 else {
-                    log.warn("Unknown type: " + propertyType.getClass().getName());
+                    log.debug("Unknown type: " + propertyType.getClass().getName());
                     col.setDataType(DataType.UNKNOWN);
                     if (value != null) {
                         Serializable s = (Serializable)value;
