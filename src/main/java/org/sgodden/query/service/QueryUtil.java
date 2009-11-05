@@ -125,21 +125,4 @@ public class QueryUtil {
     static int getRelationDepth(String attributePath) {
         return attributePath.split("\\.").length - 1;
     }
-
-    @SuppressWarnings("unchecked")
-	public static Map getParameterMap(Query q) {
-		if (q instanceof AbstractQueryImpl) {
-			try {
-				return (Map)q.getClass().getMethod("getNamedParams", (Class[])null).invoke(q, (Object[])null);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException("Failed to retrieve named parameters from query", e);
-			} catch (InvocationTargetException e) {
-				throw new RuntimeException("Failed to retrieve named parameters from query", e);
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException("Failed to retrieve named parameters from query", e);
-			}
-		} else {
-			throw new IllegalArgumentException("don't know how to extract the named parameters from queries of type " + q);
-		}
-	}
 }

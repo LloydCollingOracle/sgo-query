@@ -192,7 +192,7 @@ public class WhereClauseBuilder {
             parameterMap.put(parmName, crit.getValues());
         }
         else {
-            if(crit.getValues() != null) {
+            if(crit.getValues() != null && crit.getValues()[0] != null) {
                 buf.append(":");
                 buf.append(parmName);
                 parameterMap.put(parmName, QueryUtil.valueToParameter(crit.getAttributePath(), crit

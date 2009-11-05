@@ -39,13 +39,16 @@ public class QueryStringBuilder {
     @SuppressWarnings("unchecked")
 	public org.hibernate.Query buildCountQuery(Session session, Query query) {
         if (!query.getIncludeId()) {
-        	org.hibernate.Query normalHQLQuery = buildQuery(session, query);
+        	Map<String, Object> parameterMap = new HashMap<String, Object>();
+        	org.hibernate.Query normalHQLQuery = buildQuery(session, query, parameterMap);
         	String normalQuery = normalHQLQuery.getQueryString();
-            normalQuery = normalQuery.substring(0, normalQuery.indexOf("ORDER BY"));
-            String queryString = "select count(*) from ( " + normalQuery + ") as subq";
+        	if (normalQuery.indexOf("GROUP BY") > -1)
+        		normalQuery = normalQuery.substring(normalQuery.indexOf(" FROM ") + 6, normalQuery.indexOf("GROUP BY"));
+        	else
+        		normalQuery = normalQuery.substring(normalQuery.indexOf(" FROM ") + 6, normalQuery.indexOf("ORDER BY"));
+            String queryString = "SELECT COUNT(distinct obj.id) FROM " + normalQuery;
             
             org.hibernate.Query q = session.createQuery(queryString);
-            Map parameterMap = QueryUtil.getParameterMap(q);
             for (Object parameterEntry : parameterMap.entrySet()) {
             	Map.Entry entry = (Map.Entry)parameterEntry;
             	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
@@ -86,6 +89,11 @@ public class QueryStringBuilder {
     }
 
     public org.hibernate.Query buildQuery(Session session, Query query) {
+        return buildQuery(session, query, null);
+    
+    }
+
+    public org.hibernate.Query buildQuery(Session session, Query query, Map<String, Object> parameterMap) {
 
         StringBuffer buf = getSelectClause(query);
 
@@ -101,6 +109,8 @@ public class QueryStringBuilder {
         }
 
         Map<String, Object> parameters = appendWhereClause(query, buf);
+        if (parameterMap != null)
+            parameterMap.putAll(parameters);
 
         appendGroupByClause(query, buf);
 
