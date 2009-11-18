@@ -85,6 +85,11 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * The counts of the distinct values in the grouped column
      */
     private Map<Object, Long> groupCounts = null;
+    
+    /**
+     * The query sort data
+     */
+    private SortData[] sortData = new SortData[0];
 
     /**
      * Constructs a new abstract query table model.
@@ -276,10 +281,13 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      */
     protected void refresh(Restriction criterion,
             SortData sortData) {
-        if (sortData != null)
+        if (sortData != null) {
+            setSortData(new SortData[] {sortData});
             this.refresh(criterion, new SortData[] {sortData});
-        else
+        } 
+        else {
             this.refresh(criterion, new SortData[0]);
+        }
     }
 
     /**
@@ -296,6 +304,9 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      */
     public void refresh(Restriction criterion,
             SortData[] sortData) {
+
+        setSortData(sortData);
+
         Query query = getQuery();
 
         if (criterion != null) {
@@ -319,7 +330,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      *            <code>null</code> to perform no filtering.
      */
     public void refresh(Restriction criterion) {
-        refresh(criterion, (SortData)null);
+        refresh(criterion, getSortData());
     }
 
     /**
@@ -431,4 +442,11 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
         }
     }
 
+    public SortData[] getSortData() {
+        return sortData;
+    }
+
+    public void setSortData(SortData[] sortData) {
+        this.sortData = sortData;
+    }
 }

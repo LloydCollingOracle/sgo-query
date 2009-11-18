@@ -43,6 +43,7 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel {
      */
     public DefaultQueryTableModel(Query query) {
         this.query = query;
+        setSortData(query.getSortData());
     }
 
     protected final Query getQuery() {
