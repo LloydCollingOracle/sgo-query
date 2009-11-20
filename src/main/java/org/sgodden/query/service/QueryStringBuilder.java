@@ -124,6 +124,8 @@ public class QueryStringBuilder {
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
         	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
         		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
+        	} else if (entry.getValue() != null && Collection.class.isAssignableFrom(entry.getValue().getClass())) { 
+        		q.setParameterList((String)entry.getKey(), (Collection)entry.getValue());
         	} else {
         		q.setParameter((String)entry.getKey(), entry.getValue());
         	}
