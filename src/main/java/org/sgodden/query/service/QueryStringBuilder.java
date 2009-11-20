@@ -1,5 +1,6 @@
 package org.sgodden.query.service;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -80,7 +81,10 @@ public class QueryStringBuilder {
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
         	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
         		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
-        	} else {
+        	} else if (entry.getValue() != null && Collection.class.isAssignableFrom(entry.getValue().getClass())) { 
+        		q.setParameterList((String)entry.getKey(), (Collection)entry.getValue());
+        	}
+        	else {
         		q.setParameter((String)entry.getKey(), entry.getValue());
         	}
         }
