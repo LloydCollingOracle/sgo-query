@@ -54,6 +54,8 @@ public class QueryStringBuilder {
             	Map.Entry entry = (Map.Entry)parameterEntry;
             	if (entry.getValue() != null && entry.getValue().getClass().isArray()) {
             		q.setParameterList((String)entry.getKey(), (Object[])entry.getValue());
+            	} else if (entry.getValue() != null && Collection.class.isAssignableFrom(entry.getValue().getClass())) { 
+            		q.setParameterList((String)entry.getKey(), (Collection)entry.getValue());
             	} else {
             		q.setParameter((String)entry.getKey(), entry.getValue());
             	}
