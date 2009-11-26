@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Session;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.CalendarDateType;
 import org.hibernate.type.CalendarType;
@@ -41,8 +40,6 @@ import org.sgodden.query.QueryColumn;
 import org.sgodden.query.ResultSet;
 import org.sgodden.query.ResultSetColumn;
 import org.sgodden.query.ResultSetRow;
-
-import com.google.inject.Provider;
 
 /**
  * An implementation of the query service which uses hibernate.
@@ -60,7 +57,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
     /**
      * The provider of hibernate sessions.
      */
-    private Provider < Session > sessionProvider;
+    private SessionProvider sessionProvider;
 
     /**
      * See
@@ -286,7 +283,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
         return ret;
     }
 
-    public void setSessionProvider(Provider < Session > sessionProvider) {
+    public void setSessionProvider(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 

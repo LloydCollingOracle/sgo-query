@@ -30,6 +30,7 @@ import org.sgodden.query.AndRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
 import org.sgodden.query.Query;
+import org.sgodden.query.QueryServiceProvider;
 import org.sgodden.query.Restriction;
 import org.sgodden.query.ResultSet;
 import org.sgodden.query.ResultSetColumn;
@@ -37,8 +38,6 @@ import org.sgodden.query.ResultSetRow;
 import org.sgodden.query.SimpleRestriction;
 import org.sgodden.query.SortData;
 import org.sgodden.query.service.QueryService;
-
-import com.google.inject.Provider;
 
 /**
  * Abstract implementation of the {@link QueryTableModel} interface.
@@ -51,7 +50,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     /**
      * The query service which will actually execute the queries.
      */
-    private Provider < QueryService > serviceProvider;
+    private QueryServiceProvider serviceProvider;
 
     /**
      * The filter criterion used on the last query refresh.
@@ -62,8 +61,8 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * Sets the query service to be used to run the queries.
      * @param queryService the query service.
      */
-    public void setQueryServiceProvider(Provider < QueryService > queryService) {
-        this.serviceProvider = queryService;
+    public void setQueryServiceProvider(QueryServiceProvider queryServiceProvider) {
+        this.serviceProvider = queryServiceProvider;
     }
 
     /**
@@ -103,9 +102,9 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * execute the queries.
      * @param service the query service.
      */
-    public AbstractQueryTableModel(Provider < QueryService > service) {
+    public AbstractQueryTableModel(QueryServiceProvider serviceProvider) {
         this();
-        this.serviceProvider = service;
+        this.serviceProvider = serviceProvider;
     }
 
     /**
