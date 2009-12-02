@@ -207,16 +207,22 @@ public class WhereClauseBuilder {
     }
     
     private void appendSimple(SimpleRestriction crit, StringBuffer buf) {
+    	
+    	boolean upperCasingOfValueRequired = false;
 
-        //We would never attempt to upper case a search for a null value
-        if (crit.getValues() != null && crit.getValues()[0] !=null && crit.getIgnoreCase()) {
-            buf.append("UPPER(");
+        //We would never attempt to upper case a search for a null value or a value that isn't a String
+        if (crit.getIgnoreCase() && crit.getValues() != null && crit.getValues()[0] !=null
+        		&& crit.getValues()[0] instanceof String) {
+        	upperCasingOfValueRequired = true;
         }
-
+        
+        if (upperCasingOfValueRequired)
+            buf.append("UPPER(");
+        
         buf.append(QueryUtil.getQualifiedAttributeIdentifier(crit
                 .getAttributePath()));
         
-        if (crit.getValues() != null && crit.getValues()[0] !=null &&  crit.getIgnoreCase()) {
+        if (upperCasingOfValueRequired) {
             buf.append(")");
         }
 
