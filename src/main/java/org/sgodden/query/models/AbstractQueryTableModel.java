@@ -55,7 +55,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     /**
      * The filter criterion used on the last query refresh.
      */
-    private Restriction criterion;
+    protected Restriction criterion;
 
     /**
      * Sets the query service to be used to run the queries.

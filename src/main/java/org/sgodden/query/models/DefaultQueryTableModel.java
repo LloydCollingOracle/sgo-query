@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.sgodden.query.Query;
 import org.sgodden.query.QueryColumn;
+import org.sgodden.query.Restriction;
 
 /**
  * A default implementation of a query table model, which allows simple queries
@@ -42,6 +43,12 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel {
      * @param attributePaths the attribute paths for each column.
      */
     public DefaultQueryTableModel(Query query) {
+        this.query = query;
+        setSortData(query.getSortData());
+    }
+    
+    public DefaultQueryTableModel(Query query, Restriction restriction) {
+    	this.criterion = restriction;
         this.query = query;
         setSortData(query.getSortData());
     }
