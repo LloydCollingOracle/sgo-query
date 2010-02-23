@@ -151,4 +151,23 @@ public class SimpleRestriction implements Serializable, Restriction {
 		return this;
 	}
 
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		ret.append(getAttributePath());
+		ret.append(" ");
+		ret.append(getOperator().name());
+		ret.append(" ");
+		if (getValues() == null) {
+			ret.append("NULL");
+		} else if (getValues().length == 1) {
+			ret.append(getValues()[0]);
+		} else {
+			for (int i = 0; i < getValues().length; i++) {
+				ret.append(getValues()[i]);
+				if (i < getValues().length - 1)
+					ret.append(",");
+			}
+		}
+		return ret.toString();
+	}
 }

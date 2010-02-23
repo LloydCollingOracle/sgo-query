@@ -20,4 +20,8 @@ public class NotRestriction implements Restriction {
     public void setChild(Restriction child) {
         this.child = child;
     }
+    
+    public String toString() {
+    	return "not( " + child.toString() + " )";
+    }
 }

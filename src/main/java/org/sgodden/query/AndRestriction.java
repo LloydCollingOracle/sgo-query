@@ -68,4 +68,16 @@ public class AndRestriction implements CompositeRestriction {
         return criteria;
     }
 
+    public String toString() {
+    	StringBuffer ret = new StringBuffer();
+    	for (int i = 0; i < criteria.size(); i++) {
+    		ret.append("(");
+    		ret.append(criteria.get(i).toString());
+    		ret.append(")");
+    		if (i < criteria.size() - 1) {
+    			ret.append(" and ");
+    		}
+    	}
+    	return ret.toString();
+    }
 }
