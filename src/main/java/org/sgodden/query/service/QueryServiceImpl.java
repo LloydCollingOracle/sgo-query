@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Session;
 import org.hibernate.type.BooleanType;
 import org.hibernate.type.CalendarDateType;
 import org.hibernate.type.CalendarType;
@@ -57,7 +58,8 @@ public class QueryServiceImpl implements QueryService, Serializable {
     /**
      * The provider of hibernate sessions.
      */
-    private SessionProvider sessionProvider;
+    //private SessionProvider sessionProvider;
+    private QueryBasedSessionProvider queryBasedSessionProvider;
 
     /**
      * See
@@ -66,10 +68,10 @@ public class QueryServiceImpl implements QueryService, Serializable {
      */
     @SuppressWarnings("unchecked")
     public ResultSet executeQuery(Query query) {
-    	
-    	if (sessionProvider == null) {
-    		throw new NullPointerException("The session provider is null - did you forget to set it?");
-    	}
+        
+        if (queryBasedSessionProvider == null) {
+            throw new NullPointerException("The session provider is null - did you forget to set it?");
+        }
 
         Date startTime = null;
 
@@ -112,7 +114,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
             return ret;
         }
 
-        org.hibernate.Query hq = new QueryStringBuilder().buildQuery(sessionProvider.get(), query);
+        org.hibernate.Query hq = new QueryStringBuilder().buildQuery(getSession(query), query);
         log.debug(hq.getQueryString());
         
         if (query.getFetchSize() > 0 && query.getMaxRows() > 0) {
@@ -185,7 +187,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
                 Type propertyType = ObjectUtils.getPropertyClass(query
                         .getObjectClassName(), queryCol.getAttributePath(),
-                        sessionProvider.get().getSessionFactory());
+                        queryBasedSessionProvider.get(query).getSessionFactory());
 
                 if (propertyType instanceof StringType) {
                     col.setDataType(DataType.STRING);
@@ -220,10 +222,10 @@ public class QueryServiceImpl implements QueryService, Serializable {
                     }
                 }
                 else if (propertyType instanceof BooleanType) {
-                	col.setDataType(DataType.BOOLEAN);
-                	if (value != null) {
-                		col.setValue(value);
-                	}
+                    col.setDataType(DataType.BOOLEAN);
+                    if (value != null) {
+                        col.setValue(value);
+                    }
                 }
                 else {
                     log.debug("Unknown type: " + propertyType.getClass().getName());
@@ -243,7 +245,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
         ret.setCachedPageRows(rows);
         if (!query.getCalculateRowCount()) {
-        	ret.setRowCount(rows.size());
+            ret.setRowCount(rows.size());
         }
 
         if (log.isDebugEnabled()) {
@@ -263,7 +265,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
         long ret = 0;
         
-        org.hibernate.Query hq = new QueryStringBuilder().buildCountQuery(sessionProvider.get(), query);
+        org.hibernate.Query hq = new QueryStringBuilder().buildCountQuery(getSession(query), query);
 
         log.debug("Calculating total rows with query: " + hq.getQueryString());
 
@@ -282,9 +284,45 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
         return ret;
     }
-
+    
+    private Session getSession(Query query) {
+        return queryBasedSessionProvider.get(query);
+    }
+    
+    public void setSessionProvider(QueryBasedSessionProvider qbsp) {
+        if (qbsp == null) {
+            throw new NullPointerException("QueryBasedSessionProvider must not be null");
+        }
+        this.queryBasedSessionProvider = qbsp;
+    }
+    
     public void setSessionProvider(SessionProvider sessionProvider) {
-        this.sessionProvider = sessionProvider;
+        if (sessionProvider == null) {
+            throw new NullPointerException("SessionProvider must not be null");
+        }
+        if (queryBasedSessionProvider == null) { 
+            queryBasedSessionProvider = new DefaultSessionProvider(sessionProvider);
+        }
+    }
+    
+    // wrapper for standard SessionProvider
+    private static class DefaultSessionProvider implements QueryBasedSessionProvider {
+        
+        private SessionProvider sessionProvider;
+        
+        public DefaultSessionProvider(SessionProvider sessionProvider) {
+            this.sessionProvider = sessionProvider;
+        }
+
+        // maintain backward compatibility by calling the SessionProvider
+        public Session get(Query query) {                    
+            return get();
+        }
+
+		public Session get() {                  
+            return sessionProvider.get();
+		}
+
     }
 
 }
