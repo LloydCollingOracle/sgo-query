@@ -69,7 +69,7 @@ public class QueryStringBuilder {
         Set<String> aliases = new HashSet<String>();
         aliases.add("obj");
 
-        appendFromClause(query, buf);
+        aliases = appendFromClause(query, buf);
         if (query.getFilterCriterion() != null) {
             appendFromClauseForFilterCriterion(query.getFilterCriterion(), buf,
                     aliases);

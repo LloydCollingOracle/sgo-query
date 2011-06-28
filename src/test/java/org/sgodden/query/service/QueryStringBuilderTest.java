@@ -1,13 +1,15 @@
 package org.sgodden.query.service;
 
 import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.*;
 import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.createNiceMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 
+import org.easymock.Capture;
 import org.hibernate.Session;
+import org.sgodden.query.AggregateFunction;
 import org.sgodden.query.AndRestriction;
 import org.sgodden.query.Operator;
 import org.sgodden.query.OrRestriction;
@@ -203,5 +205,41 @@ public class QueryStringBuilderTest {
         verify(q);
     }
 
+    public void testCountQueryWithLocaleFunctions() {
+        Query query = new Query().setObjectClassName("org.sgodden.example.Site");
+        query.addColumn("name");
+        query.addColumn("code");
+        query.addColumn("supplier.name");
+        query.addColumn("mainAddress.country.localeData.description", AggregateFunction.LOCALE);
+        query.addColumn("leadTechnicalManager.person.name");
+        query.addColumn("status.localeData.description", AggregateFunction.LOCALE);
+        query.addColumn("lastAudit.toDate");
+        query.addColumn("lastVisit.toData");
+        query.addColumn("lastAudit.score.localeData.description", AggregateFunction.LOCALE);
+        query.addColumn("lastVisit.score.localeData.description", AggregateFunction.LOCALE);
+        OrRestriction orRestriction = new OrRestriction();
+        query.setFilterCriterion(orRestriction);
+        orRestriction.or(new SimpleRestriction("name", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("code", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("supplier.name", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("mainAddress.country.localeData.description", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("leadTechnicalManager.person.name", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("status.localeData.description", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("lastAudit.score.localeData.description", Operator.CONTAINS, "ABC"));
+        orRestriction.or(new SimpleRestriction("lastVisit.score.localeData.description", Operator.CONTAINS, "ABC"));
+        
+        Session s = createMock(Session.class);
+        org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
+
+        expect(s.createQuery(eq("SELECT COUNT(distinct obj.id)  FROM org.sgodden.example.Site AS obj LEFT OUTER JOIN obj.supplier AS supplier LEFT OUTER JOIN obj.mainAddress AS mainAddress LEFT OUTER JOIN mainAddress.country AS mainAddresscountry LEFT OUTER JOIN mainAddresscountry.localeData AS mainAddresscountrylocaleData LEFT OUTER JOIN obj.leadTechnicalManager AS leadTechnicalManager LEFT OUTER JOIN leadTechnicalManager.person AS leadTechnicalManagerperson LEFT OUTER JOIN obj.status AS status LEFT OUTER JOIN status.localeData AS statuslocaleData LEFT OUTER JOIN obj.lastAudit AS lastAudit LEFT OUTER JOIN obj.lastVisit AS lastVisit LEFT OUTER JOIN lastAudit.score AS lastAuditscore LEFT OUTER JOIN lastAuditscore.localeData AS lastAuditscorelocaleData LEFT OUTER JOIN lastVisit.score AS lastVisitscore LEFT OUTER JOIN lastVisitscore.localeData AS lastVisitscorelocaleData WHERE ( obj.name LIKE :objname0 OR obj.code LIKE :objcode1 OR supplier.name LIKE :suppliername2 OR mainAddresscountrylocaleData.description LIKE :mainAddresscountrylocaleDatadescription3 OR leadTechnicalManagerperson.name LIKE :leadTechnicalManagerpersonname4 OR statuslocaleData.description LIKE :statuslocaleDatadescription5 OR lastAuditscorelocaleData.description LIKE :lastAuditscorelocaleDatadescription6 OR lastVisitscorelocaleData.description LIKE :lastVisitscorelocaleDatadescription7 ) AND (mainAddresscountrylocaleData.locale IN( :mainAddresscountrylocaleDatalocale ) OR mainAddresscountrylocaleData.locale IS NULL)  AND (statuslocaleData.locale IN( :statuslocaleDatalocale ) OR statuslocaleData.locale IS NULL)  AND (lastAuditscorelocaleData.locale IN( :lastAuditscorelocaleDatalocale ) OR lastAuditscorelocaleData.locale IS NULL)  AND (lastVisitscorelocaleData.locale IN( :lastVisitscorelocaleDatalocale ) OR lastVisitscorelocaleData.locale IS NULL) "))).andReturn(q);
+
+        replay(s);
+        replay(q);
+
+        new QueryStringBuilder().buildCountQuery(s, query);
+
+        verify(s);
+        verify(q);
+    }
 
 }
