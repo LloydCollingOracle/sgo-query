@@ -510,6 +510,8 @@ public class QueryStringBuilder {
                         ret.append("SUM(");
                     } else if (func == AggregateFunction.COUNT) {
                         ret.append("COUNT(");
+                    } else if (func == AggregateFunction.COUNT_DISTINCT) {
+                        ret.append("COUNT(DISTINCT ");
                     } else {
                         throw new UnsupportedOperationException("" + func);
                     }

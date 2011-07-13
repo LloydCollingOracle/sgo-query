@@ -58,6 +58,11 @@ public enum AggregateFunction {
 	/**
 	 * Selects the count of the value
 	 */
-	COUNT
+	COUNT,
+
+	/**
+	 * Selects the count of distinct values
+	 */
+	COUNT_DISTINCT
 
 }
