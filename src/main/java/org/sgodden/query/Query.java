@@ -51,6 +51,7 @@ public class Query
 	private boolean calculateRowCount = false;
 	private SortData[] sortData;
 	private boolean includeId = true;
+	private boolean distinctId = false;
 	
 	/**
 	 * Constructs a new query.
@@ -331,4 +332,25 @@ public class Query
         includeId = include;
     }
 
+    /**
+     * @return whether the rows returned should have unique ids ignoring duplicates
+     */
+    public boolean getDistinctId() {
+    	return distinctId;
+    }
+    
+    /**
+     * Set whether the rows returned should have unique ids.  Use with caution to remove duplicate 
+     * results (eg due to LEFT JOINs to tables with multiple rows for the entity's foreign key).
+     * 
+     * Sets includeId to true if parameter is true;
+     * 
+     * @param distinct
+     */
+    public void setDistinctId(boolean distinct) {
+		if (distinct) {
+			setIncludeId(true);
+		}
+		distinctId = distinct;
+    }
 }

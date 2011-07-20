@@ -33,8 +33,7 @@ public class QueryStringBuilder {
      * Builds a HQL query string to determine the number of matching rows of the
      * passed query.
      * 
-     * @param query
-     *            the query.
+     * @param query - the query.
      * @return An HQL query string to determine the number of matching rows.
      */
     @SuppressWarnings("unchecked")
@@ -481,11 +480,16 @@ public class QueryStringBuilder {
      */
     private StringBuffer getSelectClause(Query query) {
         StringBuffer ret = new StringBuffer();
-        if (query.getIncludeId())
-            ret.append("SELECT obj.id");
-        else
+        if (query.getIncludeId()) {
+            if (query.getDistinctId()) {
+        	ret.append("SELECT DISTINCT(obj.id)");
+            } else {
+        	ret.append("SELECT obj.id");
+            }
+        } else {
             ret.append("SELECT ");
-
+        }
+        
         for (QueryColumn col : query.getColumns()) {
 
             if (!ret.toString().equals("SELECT ")) {
