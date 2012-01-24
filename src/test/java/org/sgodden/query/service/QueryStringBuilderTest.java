@@ -194,7 +194,7 @@ public class QueryStringBuilderTest {
         Session s = createMock(Session.class);
         org.hibernate.Query q = createNiceMock(org.hibernate.Query.class);
 
-        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact LEFT OUTER JOIN obj.contact AS contact LEFT OUTER JOIN contact.roles AS contactroles WHERE ( obj.contact IS NOT EMPTY  AND contact.roles IS NOT EMPTY  AND contactroles.users IS EMPTY ) ORDER BY 2, 1"))).andReturn(q);
+        expect(s.createQuery(eq("SELECT obj.id, obj.code FROM java.lang.String AS obj LEFT OUTER JOIN obj.contact AS contact LEFT OUTER JOIN contact.roles AS contactroles WHERE ( obj.contact IS NOT EMPTY  AND contact.roles IS NOT EMPTY  AND contactroles.users IS EMPTY ) ORDER BY 2, 1"))).andReturn(q);
 
         replay(s);
         replay(q);

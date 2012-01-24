@@ -39,9 +39,10 @@ import org.sgodden.query.service.QueryService;
  * @author Simon Godden
  *
  */
-@SuppressWarnings("serial")
 public class ResultSet implements Serializable {
-    /**
+    
+	private static final long serialVersionUID = 1L;
+	/**
      * The log.
      */
     private static final transient Log log = LogFactory.getLog(ResultSet.class);

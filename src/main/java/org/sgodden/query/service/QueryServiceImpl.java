@@ -46,10 +46,11 @@ import org.sgodden.query.ResultSetRow;
  * An implementation of the query service which uses hibernate.
  * @author goddens
  */
-@SuppressWarnings("serial")
 public class QueryServiceImpl implements QueryService, Serializable {
 
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The log.
      */
     private static final transient Log log = LogFactory
@@ -59,7 +60,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
      * The provider of hibernate sessions.
      */
     //private SessionProvider sessionProvider;
-    private QueryBasedSessionProvider queryBasedSessionProvider;
+    private transient QueryBasedSessionProvider queryBasedSessionProvider;
 
     /**
      * See
@@ -178,12 +179,6 @@ public class QueryServiceImpl implements QueryService, Serializable {
                 else
                     queryCol = query.getColumns().get(i);
                 Object value = row[i];
-
-                if (value != null
-                        && AggregateFunction.LOCALE == queryCol.getAggregateFunction()) {
-                    String theString = (String) value;
-                    value = theString.substring(10, theString.length());
-                }
 
                 Type propertyType = ObjectUtils.getPropertyClass(query
                         .getObjectClassName(), queryCol.getAttributePath(),

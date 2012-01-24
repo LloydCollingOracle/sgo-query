@@ -238,7 +238,7 @@ public class QueryStringBuilder {
                     if ("".equals(oldPath))
                         oldPath = "obj";
                     thisPath.append(relationPaths[i]);
-                    if (!aliases.contains(thisPath)) {
+                    if (!aliases.contains(thisPath.toString())) {
                         buf.append(" LEFT OUTER JOIN ");
                         buf.append(oldPath);
                         buf.append(".");
@@ -536,7 +536,7 @@ public class QueryStringBuilder {
     }
 
     /**
-     * Constructs a locale select fragemnt for the specified query column.
+     * Constructs a locale select fragment for the specified query column.
      * 
      * @param query
      *            the query.
@@ -545,12 +545,12 @@ public class QueryStringBuilder {
      * @return the locale select fragment.
      */
     private StringBuffer makeLocaleAggregateSelect(Query query, QueryColumn col) {
-        StringBuffer ret = new StringBuffer("max( concat ("
+        StringBuffer ret = new StringBuffer("substring(max( concat ("
                 + "substring (concat(coalesce("
                 + QueryUtil.getClassAlias(col.getAttributePath())
                 + ".locale, ''), '          '),1,10),"
                 + QueryUtil.getQualifiedAttributeIdentifier(col
-                        .getAttributePath()) + ") )");
+                        .getAttributePath()) + ") ), 10)");
         return ret;
     }
 
