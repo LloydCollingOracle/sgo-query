@@ -17,9 +17,14 @@ package org.sgodden.query.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.sgodden.query.Query;
 import org.sgodden.query.QueryColumn;
 import org.sgodden.query.Restriction;
+import org.sgodden.query.ResultSet;
+import org.sgodden.query.ResultSetColumn;
+import org.sgodden.query.ResultSetRow;
 
 /**
  * A default implementation of a query table model, which allows simple queries
@@ -29,11 +34,19 @@ import org.sgodden.query.Restriction;
  * @author goddens
  */
 @SuppressWarnings("serial")
-public class DefaultQueryTableModel extends AbstractQueryTableModel {
+public class DefaultQueryTableModel extends AbstractQueryTableModel implements CachingQueryTableModel{
 
     private Query query;
     private Object[] columnIdentifiers;
     
+    private static final transient Log log = LogFactory.getLog(DefaultQueryTableModel.class);
+    
+    /**
+     * @See getValueFromCacheAt
+     * cache[column][row]
+     */
+    protected Object[][]cache;
+        
     /**
      * Creates a new DefaultQueryTableModel instance with the specified
      * parameters.
@@ -78,4 +91,73 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel {
         this.columnIdentifiers = columnIdentifiers;
     }
 
+    /**
+     * Downloads all the data if it hasn't already been, and cache it.
+     * @return the Object required from the local cache
+     */
+    public Object getValueFromCacheAt(int colIndex, int rowIndex) {
+	
+	// do we need to download the database
+	if (cache == null) {
+	    
+	    // make the cache the right size
+	    cache = new Object[getColumnCount()][getRowCount()];
+	    log.debug("Created cache sized[cols][rows ["+ getColumnCount() + "],[" + getRowCount() + "]"); 
+	    
+	    // fill it
+	    ResultSet rs = getResultSet();
+	    Query query = rs.getQuery();
+	    query.setMaxRows(getRowCount());
+	    	    
+	    log.trace("next, running refresh");	    
+	    doRefresh(rs.getQuery());
+	    log.debug("refresh run, fetch size is "+ query.getFetchSize() + " and max rows is " + query.getMaxRows());
+	    
+	    int rowCounter=0, colCounter;
+	    for(ResultSetRow row : rs.getCachedPageRows()) {
+		colCounter = 0;
+		String debugOutput = "", COMMA="";
+		for (ResultSetColumn col : row.getColumns()){
+		    cache[colCounter][rowCounter] = col.getValue();
+		    try {
+			debugOutput += COMMA + String.valueOf(colCounter) + ":" + col.getValue().toString();
+		    } catch (NullPointerException notInterested) {
+		        debugOutput += COMMA + "NULL";
+		    }
+		    COMMA = ", ";
+		    colCounter++;
+		}
+		
+		log.trace("row = " + debugOutput);
+		rowCounter++;
+	    }
+	} else {
+	    log.trace("getting value from cache");
+	}
+	
+	// return the value
+	try {
+	    //log.trace("Returning col : "+ colIndex + ", row : " + rowIndex + " = " + cache[colIndex][rowIndex].toString());
+	    return cache[colIndex][rowIndex];
+	} catch(NullPointerException npe) {
+	    //log.trace("Returning col : "+ colIndex + ", row : " + rowIndex + " = NULL");
+	    return null;
+	}
+    }
+    
+    /**
+     * Clear the cache.  Important to call this when you are done with the cache 
+     * to clear the memory used and prevent data corruption if this object is reused. 
+     * @See getValueFromCacheAt
+     */
+    public void invalidateCache() {
+	cache = null;
+    }
+    
+    /**
+     * @return the cache data array - cache[column][row]
+     */
+    public Object[][] getCache() {
+	return cache;
+    }
 }
