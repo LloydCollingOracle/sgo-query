@@ -550,7 +550,7 @@ public class QueryStringBuilder {
                 + QueryUtil.getClassAlias(col.getAttributePath())
                 + ".locale, ''), '          '),1,10),"
                 + QueryUtil.getQualifiedAttributeIdentifier(col
-                        .getAttributePath()) + ") ), 10)");
+                        .getAttributePath()) + ") ), 11)");
         return ret;
     }
 
