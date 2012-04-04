@@ -298,7 +298,7 @@ public class QueryStringBuilder {
         if (query.getFilterCriterion() != null) {
             whereAppended = true;
         }
-        Map<String, Object> ret = new HashMap<String, Object>();
+        Map<String, Object> namedParameterValues = new HashMap<String, Object>();
 
         Locale[] locales = LocaleUtils.getLocaleHierarchy(query.getLocale());
         String[] localeStrings = new String[locales.length];
@@ -322,19 +322,77 @@ public class QueryStringBuilder {
                         .getQualifiedAttributeIdentifier(col.getAttributePath()));
 
                 buf.append(qualifiedAttributeIdentifier);
-                buf.append(" IN( :");
-                buf.append(qualifiedAttributeIdentifier.replace(".", ""));
-                buf.append(" ) OR ");
+                if (localeStrings != null && localeStrings.length > 0) {
+                	buf.append(" IN( :");
+                	buf.append(qualifiedAttributeIdentifier.replace(".", ""));
+                	buf.append(" ) OR ");
+                    namedParameterValues.put(qualifiedAttributeIdentifier.replace(".", ""), localeStrings);
+                }
                 buf.append(qualifiedAttributeIdentifier);
                 buf.append(" IS NULL) ");
                 
-                ret.put(qualifiedAttributeIdentifier.replace(".", ""), localeStrings);
             }
         }
-        return ret;
+        
+        if (query.getFilterCriterion() != null) {
+            whereAppended = appendLocaleWhereClauseForFilterCriterion(query.getFilterCriterion(), buf, whereAppended, namedParameterValues, localeStrings);
+        }
+        
+        return namedParameterValues;
     }
 
-    /**
+    private boolean appendLocaleWhereClauseForFilterCriterion(
+			Restriction crit, StringBuffer buf, boolean whereAppended, Map<String, Object> namedParameterValues, String[] localeStrings) {
+        if (crit instanceof ArbitraryRestriction) {
+            // not required
+        } else if (crit instanceof SimpleRestriction) {
+            whereAppended = appendLocaleWhereClauseForSimpleFilterCriterion((SimpleRestriction) crit,
+                    buf, whereAppended, namedParameterValues, localeStrings);
+        } else if (crit instanceof NotRestriction) {
+        	whereAppended = appendLocaleWhereClauseForFilterCriterion(((NotRestriction)crit).getChild(), buf, whereAppended, namedParameterValues, localeStrings);
+        } else {
+            CompositeRestriction comp = (CompositeRestriction) crit;
+            for (Restriction subcrit : comp.getRestrictions()) {
+                if (subcrit != null)
+                	whereAppended = appendLocaleWhereClauseForFilterCriterion(subcrit, buf, whereAppended, namedParameterValues, localeStrings);
+                else
+                    LOG.warn("Composite Restriction where one sub-restriction is null");
+            }
+        }
+        return whereAppended;
+	}
+
+	private boolean appendLocaleWhereClauseForSimpleFilterCriterion(
+			SimpleRestriction crit, StringBuffer buf, boolean whereAppended, Map<String, Object> namedParameterValues, String[] localeStrings) {
+		if (crit.getAttributePath().contains("localeData")) {
+
+	        String qualifiedAttributeIdentifier = getQualifiedLocaleIdentifier(QueryUtil
+	                .getQualifiedAttributeIdentifier(crit.getAttributePath()));
+	        
+	        String parmName = qualifiedAttributeIdentifier.replace(".", "");
+	        if (!namedParameterValues.containsKey(parmName)) {
+	
+	            if (!whereAppended) {
+	                buf.append(" WHERE (");
+	                whereAppended = true;
+	            } else {
+	                buf.append(" AND (");
+	            }
+
+                if (localeStrings != null && localeStrings.length > 0) {
+                	buf.append(" IN( :");
+                	buf.append(qualifiedAttributeIdentifier.replace(".", ""));
+                	buf.append(" ) OR ");
+    	            namedParameterValues.put(parmName, localeStrings);
+                }
+	            buf.append(qualifiedAttributeIdentifier);
+	            buf.append(" IS NULL) ");
+	        }
+		}
+		return whereAppended;
+	}
+
+	/**
      * Appends the order by clause to the query string.
      * 
      * @param query
