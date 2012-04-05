@@ -321,8 +321,8 @@ public class QueryStringBuilder {
                 String qualifiedAttributeIdentifier = getQualifiedLocaleIdentifier(QueryUtil
                         .getQualifiedAttributeIdentifier(col.getAttributePath()));
 
-                buf.append(qualifiedAttributeIdentifier);
                 if (localeStrings != null && localeStrings.length > 0) {
+                    buf.append(qualifiedAttributeIdentifier);
                 	buf.append(" IN( :");
                 	buf.append(qualifiedAttributeIdentifier.replace(".", ""));
                 	buf.append(" ) OR ");
@@ -380,6 +380,7 @@ public class QueryStringBuilder {
 	            }
 
                 if (localeStrings != null && localeStrings.length > 0) {
+                    buf.append(qualifiedAttributeIdentifier);
                 	buf.append(" IN( :");
                 	buf.append(qualifiedAttributeIdentifier.replace(".", ""));
                 	buf.append(" ) OR ");
