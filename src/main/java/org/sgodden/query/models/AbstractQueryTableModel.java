@@ -304,6 +304,8 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     public void refresh(Restriction criterion,
             SortData[] sortData) {
 
+        this.criterion = criterion;
+
         setSortData(sortData);
 
         Query query = getQuery();
