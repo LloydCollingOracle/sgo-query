@@ -107,10 +107,16 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel implements C
 	    // fill it
 	    ResultSet rs = getResultSet();
 	    Query query = rs.getQuery();
+	    // Allow max rows to be set for the purpose of list view download, whilst retaining fetch size setting.
+	    int originalFetchSize = query.getFetchSize();
+	    query.setFetchSize(0);
 	    query.setMaxRows(getRowCount());
 	    	    
 	    log.trace("next, running refresh");	    
 	    doRefresh(rs.getQuery());
+
+            // Ensure we have reference to up-to-date result set
+	    rs = getResultSet();
 	    log.debug("refresh run, fetch size is "+ query.getFetchSize() + " and max rows is " + query.getMaxRows());
 	    
 	    int rowCounter=0, colCounter;
@@ -131,6 +137,8 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel implements C
 		log.trace("row = " + debugOutput);
 		rowCounter++;
 	    }
+  	    // Restore original fetch size setting
+	    query.setFetchSize(originalFetchSize);
 	} else {
 	    log.trace("getting value from cache");
 	}
