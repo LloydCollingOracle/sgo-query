@@ -32,5 +32,4 @@ public interface QueryService {
 	 * @return the results of the query.
 	 */
 	public ResultSet executeQuery(Query query);
-
 }

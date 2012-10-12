@@ -16,6 +16,9 @@
 # ================================================================= */
 package org.sgodden.query;
 
+import org.hibernate.dialect.function.StandardSQLFunction;
+import org.hibernate.type.StringType;
+
 /**
  * Aggregate functions that may be applied to query columns.
  * 
@@ -63,6 +66,14 @@ public enum AggregateFunction {
 	/**
 	 * Selects the count of distinct values
 	 */
-	COUNT_DISTINCT
+	COUNT_DISTINCT,
+	
+	/**
+	 * <p>Concatenates the column values using a delimiter set on the query service.</p>
+	 * <p>In order to use this, an sql function must be registered in the hibernate configuration:</p>
+	 * <b>MySQL:</b><br/>
+	 * <pre>hibernateConfig.addSqlFunction("group_concat",new StandardSQLFunction("group_concat", new StringType()));</pre>
+	 */
+	GROUP_CONCAT
 
 }

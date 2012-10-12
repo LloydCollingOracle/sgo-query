@@ -267,10 +267,13 @@ public class QueryStringBuilder {
         }
 
         if (anyAggregateFunctions) {
-            if (query.getIncludeId())
+        	
+            if (query.getIncludeId()) {
                 buf.append(" GROUP BY obj.id ");
-            else
+            } else {
                 buf.append(" GROUP BY ");
+            }
+            
             for (QueryColumn col : query.getColumns()) {
                 if (col.getAggregateFunction() == null) {
 
@@ -557,8 +560,8 @@ public class QueryStringBuilder {
 
             AggregateFunction func = col.getAggregateFunction();
 
-            if (AggregateFunction.LOCALE == func) { // LOCALE is a really
-                // special case
+            if (AggregateFunction.LOCALE == func) { 
+            	// LOCALE* is a really special case
                 ret.append(makeLocaleAggregateSelect(query, col));
             } else {
 
@@ -575,6 +578,8 @@ public class QueryStringBuilder {
                         ret.append("COUNT(");
                     } else if (func == AggregateFunction.COUNT_DISTINCT) {
                         ret.append("COUNT(DISTINCT ");
+                    } else if (func == AggregateFunction.GROUP_CONCAT) {
+                        ret.append("GROUP_CONCAT(");
                     } else {
                         throw new UnsupportedOperationException("" + func);
                     }
