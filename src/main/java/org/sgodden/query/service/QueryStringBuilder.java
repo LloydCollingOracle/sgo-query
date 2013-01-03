@@ -580,6 +580,8 @@ public class QueryStringBuilder {
                         ret.append("COUNT(DISTINCT ");
                     } else if (func == AggregateFunction.GROUP_CONCAT) {
                         ret.append("GROUP_CONCAT(");
+                    } else if (func == AggregateFunction.GROUP_CONCAT_DISTINCT) {
+                        ret.append("GROUP_CONCAT_DISTINCT(");
                     } else {
                         throw new UnsupportedOperationException("" + func);
                     }
