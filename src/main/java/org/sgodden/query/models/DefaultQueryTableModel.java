@@ -57,6 +57,9 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel implements C
      */
     public DefaultQueryTableModel(Query query) {
         this.query = query;
+        if (query.getFilterCriterion()!=null) {
+        	this.criterion = query.getFilterCriterion();
+        }
         setSortData(query.getSortData());
     }
     
