@@ -57,15 +57,6 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel implements C
      */
     public DefaultQueryTableModel(Query query) {
         this.query = query;
-        if (query.getFilterCriterion()!=null) {
-        	this.criterion = query.getFilterCriterion();
-        }
-        setSortData(query.getSortData());
-    }
-    
-    public DefaultQueryTableModel(Query query, Restriction restriction) {
-    	this.criterion = restriction;
-        this.query = query;
         setSortData(query.getSortData());
     }
 
@@ -172,5 +163,13 @@ public class DefaultQueryTableModel extends AbstractQueryTableModel implements C
      */
     public Object[][] getCache() {
 	return cache;
+    }
+    
+    /**
+     * {@inheritDoc}
+     * @see org.sgodden.query.models.QueryTableModel#replaceQueryRestriction(org.sgodden.query.Restriction)
+     */
+    public void replaceQueryRestriction(Restriction r) {
+    	this.query.setFilterCriterion(r);
     }
 }

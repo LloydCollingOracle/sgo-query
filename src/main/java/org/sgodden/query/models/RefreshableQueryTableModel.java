@@ -9,17 +9,14 @@ import org.sgodden.query.SortData;
  * @author Simon Godden
  */
 public interface RefreshableQueryTableModel extends QueryTableModel {
-	/**
-	 * Refreshes the model based on the passed criterion.
-	 * @param criterion the criterion.
-	 */
-    public void refresh(Restriction criterion);
     /**
-     * Refreshes the model based on the passed criterion
-     * and sort data.
-     * @param criterion the criterion.
+     * Refreshes the model
+     */
+    public void refresh();
+    /**
+     * Refreshes the model based on the sort data.
      * @param sortData the sort data.
      */
-    public void refresh(Restriction criterion,
-            SortData[] sortData);
+    public void refresh(
+            SortData... sortData);
 }

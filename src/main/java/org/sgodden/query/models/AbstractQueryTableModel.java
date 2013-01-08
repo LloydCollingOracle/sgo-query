@@ -53,11 +53,6 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
     private QueryServiceProvider serviceProvider;
 
     /**
-     * The filter criterion used on the last query refresh.
-     */
-    protected Restriction criterion;
-
-    /**
      * Sets the query service to be used to run the queries.
      * @param queryService the query service.
      */
@@ -265,6 +260,14 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
         }
         return serviceProvider.get();
     }
+    
+    /**
+     * {@inheritDoc}
+     * @see org.sgodden.query.models.RefreshableQueryTableModel#refresh()
+     */
+    public void refresh() {
+    	doRefresh(getQuery());
+    }
 
     /**
      * Refreshes the model based on the specified filter criterion, which may be
@@ -278,14 +281,13 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * @param sortData the primary sort data to use, or <code>null</code> to
      *            specify no primary sort.
      */
-    protected void refresh(Restriction criterion,
-            SortData sortData) {
+    protected void refresh(SortData sortData) {
         if (sortData != null) {
             setSortData(new SortData[] {sortData});
-            this.refresh(criterion, new SortData[] {sortData});
+            this.refresh(new SortData[] {sortData});
         } 
         else {
-            this.refresh(criterion, new SortData[0]);
+            this.refresh(new SortData[0]);
         }
     }
 
@@ -301,37 +303,17 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      * @param sortData the sort data to use, or <code>null</code> to
      *            specify no sort.
      */
-    public void refresh(Restriction criterion,
-            SortData[] sortData) {
-
-        this.criterion = criterion;
+    public void refresh(SortData... sortData) {
 
         setSortData(sortData);
 
         Query query = getQuery();
-
-        if (criterion != null) {
-            query.setFilterCriterion(criterion);
-        }
-        else{
-            query.setFilterCriterion(null);
-        }
 
         if (sortData != null) {
             query.setSortDatas(sortData);
         }
 
         doRefresh(query);
-    }
-
-    /**
-     * Refreshes the model based on the specified filter criteria, which may be
-     * null to retrieve all rows.
-     * @param filterCriteria the filter criteria to put in the query, or
-     *            <code>null</code> to perform no filtering.
-     */
-    public void refresh(Restriction criterion) {
-        refresh(criterion, getSortData());
     }
 
     /**
@@ -348,7 +330,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
      *      org.sgodden.ui.mvc.models.SortOrder)
      */
     public void sort(int columnIndex, boolean ascending) {
-        refresh(criterion, new SortData(columnIndex, ascending));
+        refresh(new SortData(columnIndex, ascending));
     }
 
     /**
@@ -362,7 +344,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
         for (int i = 0; i < sDatas.length; i++) {
             sDatas[i] = new SortData(columnIndices[i], ascending[i]);
         }
-        refresh(criterion, sDatas);
+        refresh(sDatas);
     }
 
     /**
@@ -385,7 +367,7 @@ public abstract class AbstractQueryTableModel extends AbstractTableModel
             else
                 throw new IllegalArgumentException("Unknown column " + columnNames[i]);
         }
-        refresh(criterion, sDatas);
+        refresh(sDatas);
     }
     
     public void updateGroupCounts(Query query) {
