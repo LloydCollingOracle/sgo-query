@@ -19,9 +19,11 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -160,7 +162,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
         DateFormat dateformat = DateFormat.getDateInstance(
                 DateFormat.SHORT, locale);
-
+        Map<String, Type> cachedPropertyTypes = new HashMap<String, Type>();
         while (it.hasNext()) {
             Object[] row = (Object[]) it.next();
             ResultSetRow rsRow = new ResultSetRow();
@@ -169,6 +171,7 @@ public class QueryServiceImpl implements QueryService, Serializable {
 
             ResultSetColumn[] remainingColumns = new ResultSetColumn[query.getIncludeId() ? row.length - 1 : row.length];
             int i = 0;
+
             if (query.getIncludeId())
                 i++;
             for (; i < row.length; i++) {
@@ -180,10 +183,15 @@ public class QueryServiceImpl implements QueryService, Serializable {
                     queryCol = query.getColumns().get(i);
                 Object value = row[i];
 
-                Type propertyType = ObjectUtils.getPropertyClass(query
+                Type propertyType;
+                if(cachedPropertyTypes.containsKey(queryCol.getAttributePath())){
+                    propertyType = cachedPropertyTypes.get(queryCol.getAttributePath());
+                }else{
+                    propertyType = ObjectUtils.getPropertyClass(query
                         .getObjectClassName(), queryCol.getAttributePath(),
                         queryBasedSessionProvider.get(query).getSessionFactory());
-
+                    cachedPropertyTypes.put(queryCol.getAttributePath(), propertyType);
+                }
                 if (propertyType instanceof StringType) {
                     col.setDataType(DataType.STRING);
                     if (value != null) {
