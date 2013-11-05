@@ -1,5 +1,7 @@
 package org.sgodden.query.models;
 
+import nextapp.echo.app.table.TableModel;
+
 /**
  * A table model which can be sorted by a particular column index or by a set of
  * columns.
@@ -22,7 +24,7 @@ package org.sgodden.query.models;
  * @author sgodden
  * 
  */
-public interface SortableTableModel {
+public interface SortableTableModel extends TableModel {
 
 	/**
 	 * Sorts the table model by the specified (one-indexed) column, and in the
