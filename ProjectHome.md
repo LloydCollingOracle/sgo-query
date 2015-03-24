@@ -1,0 +1,1 @@
+Provides a simple object-oriented query API independent of any particular persistence back end.  The purpose is not to provide a fully-featured query API, but only to make simple queries very easy to run.
