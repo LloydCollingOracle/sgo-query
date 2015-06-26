@@ -68,6 +68,11 @@ public enum AggregateFunction {
 	 * Selects the count of distinct values
 	 */
 	COUNT_DISTINCT,
+
+	/**
+	 * Selects the count of distinct values with null counting as a single value
+	 */
+	COUNT_DISTINCT_NULL,
 	
 	/**
 	 * <p>Concatenates the column values using a delimiter set on the query service.</p>

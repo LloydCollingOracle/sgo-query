@@ -576,7 +576,8 @@ public class QueryStringBuilder {
                         ret.append("SUM(");
                     } else if (func == AggregateFunction.COUNT) {
                         ret.append("COUNT(");
-                    } else if (func == AggregateFunction.COUNT_DISTINCT) {
+                    } else if (func == AggregateFunction.COUNT_DISTINCT 
+                            || AggregateFunction.COUNT_DISTINCT_NULL.equals(func)) {
                         ret.append("COUNT(DISTINCT ");
                     } else if (func == AggregateFunction.GROUP_CONCAT) {
                         ret.append("GROUP_CONCAT(");
@@ -592,6 +593,15 @@ public class QueryStringBuilder {
 
                 if (func != null) {
                     ret.append(")");
+                    
+                    if (AggregateFunction.COUNT_DISTINCT_NULL.equals(func)) {
+                        ret.append(" + MAX(CASE WHEN ");
+
+                        ret.append(QueryUtil.getQualifiedAttributeIdentifier(col
+                                .getAttributePath()));
+                        
+                        ret.append(" IS NULL THEN 1 ELSE 0 END)");
+                    }
                 }
 
             }
